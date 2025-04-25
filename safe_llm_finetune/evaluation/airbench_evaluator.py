@@ -1,26 +1,18 @@
-"""
-Abstract base classes for evaluation functionality.
-"""
+"""Evaluator running AIR Bench Safety eval on specified model"""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
 from inspect_ai import eval as inspect_eval
 from inspect_ai import Task, task, model
 from inspect_ai.log import EvalLog
+from inspect_evals import air_bench
 from transformers import PreTrainedModel, PreTrainedTokenizer
 
-class Evaluator(ABC):
-    """Abstract base class for evaluators."""
+from base import Evaluator
 
-    def __init__(self, model: model, file_path: str):
-        self.model = model
-        self.file_path = file_path
-
-    @abstractmethod
-    def create_task(self) -> Task:
-        pass
-
+class AirBenchEvaluator(Evaluator):
+    
     def run(self) -> EvalLog:
-        task = self.create_task()
         results = inspect_eval(tasks=task, model=self.model, log_dir= self.file_path + "/eval_log")
         return results
+        
