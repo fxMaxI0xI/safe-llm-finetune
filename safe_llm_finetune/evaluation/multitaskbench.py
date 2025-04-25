@@ -13,7 +13,7 @@ import os
 import openai
 import requests
 from safe_llm_finetune.evaluation.base import Evaluator
-from templates import REFUSAL_MODEL_GRADED_QA_TEMPLATE, REFUSAL_INSTRUCTION_TEMPLATE
+from safe_llm_finetune.evaluation.prompt_templates import REFUSAL_MODEL_GRADED_QA_TEMPLATE, REFUSAL_INSTRUCTION_TEMPLATE
 
 HF = os.getenv("HF")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -21,8 +21,8 @@ openai.api_key = OPENAI_API_KEY
 
 
 class MultiTaskBench(Evaluator):
-    def __init__(self, model_name, file_path):
-        super().__init__(model_name, file_path)
+    def __init__(self, model_name, file_path, debug= False):
+        super().__init__(model_name, file_path, debug)
         
         # downloading multitaskbench dataset, stored in data folder locally
         
@@ -44,7 +44,7 @@ class MultiTaskBench(Evaluator):
             "data/multitaskbench.csv",
             FieldSpec(
                 input="Query",
-                target="Response"
+                target="Response",
             )
             
         )
@@ -57,7 +57,7 @@ class MultiTaskBench(Evaluator):
         detect_refusal = model_graded_qa(
             template= REFUSAL_MODEL_GRADED_QA_TEMPLATE,
             instructions= REFUSAL_INSTRUCTION_TEMPLATE,
-            grade_pattern=r"GRADE: ([YN])",
+            grade_pattern=r"GRADE: ([YNyn])",
             model="openai/gpt-4o-mini",
             )
         

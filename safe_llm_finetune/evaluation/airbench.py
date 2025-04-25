@@ -14,8 +14,6 @@ HF = os.getenv("HF")
 
 class AirBench(Evaluator):
     
-    def run(self) -> EvalLog:
-        model = "hf/"+ HF + "/" + self.model_name
-        results = inspect_eval(tasks=air_bench, model= model, log_dir= self.file_path + "/eval_log", model_args=dict(device="cuda:0"))
-        return results
-        
+    def create_task(self):
+        return air_bench.air_bench()
+    

@@ -185,5 +185,5 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-# datasets
-safe_llm_finetune/evaluation/data
+# eval datasets
+notebooks/data
