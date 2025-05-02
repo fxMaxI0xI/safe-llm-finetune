@@ -2,12 +2,10 @@
 Abstract base classes for evaluation functionality.
 """
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
+from typing import List
 from inspect_ai import eval as inspect_eval
-from inspect_ai import Task, task
+from inspect_ai import Task
 from inspect_ai.log import EvalLog
-from transformers import PreTrainedModel, PreTrainedTokenizer
 import os
 
 HF = os.getenv("HF")

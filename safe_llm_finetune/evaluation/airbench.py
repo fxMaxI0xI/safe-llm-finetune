@@ -1,12 +1,6 @@
 """Evaluator running AIR Bench Safety eval on specified model"""
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
-from inspect_ai import eval as inspect_eval
-from inspect_ai import Task, task, model
-from inspect_ai.log import EvalLog
+
 from inspect_evals import air_bench
-from transformers import PreTrainedModel, PreTrainedTokenizer
 import os
 from safe_llm_finetune.evaluation.base import Evaluator
 

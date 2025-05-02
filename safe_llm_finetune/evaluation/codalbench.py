@@ -16,11 +16,11 @@ openai.api_key = OPENAI_API_KEY
 
 
 class CodalBench(Evaluator):
-    def __init__(self, model_name, file_path, debug= False, preference: Optional[str] = None):
+    def __init__(self, model_name, file_path, debug= False, preference: Optional[str] = None, judge_model = "openai/gpt-4o-mini"):
         super().__init__(model_name, file_path, debug)
         
         self.preference = preference
-        
+        self.judge_model = judge_model
         # Validate preference if provided
         if preference is not None and preference not in CODAL_PROMPT_TEMPLATES.keys():
             raise ValueError(f"Invalid preference '{preference}'. Must be one of: {list(CODAL_PROMPT_TEMPLATES.keys())}")
@@ -65,7 +65,7 @@ class CodalBench(Evaluator):
                     template=CODAL_PROMPT_TEMPLATES[self.preference],
                     instructions=CODAL_INSTRUCTION_TEMPLATE,
                     grade_pattern=r"GRADE:\s*(\d+)/10",
-                    model="openai/gpt-4o-mini"
+                    model=self.judge_model
                 )
                 
                 return Task(
@@ -97,7 +97,7 @@ class CodalBench(Evaluator):
                     template=CODAL_PROMPT_TEMPLATES[preference],
                     instructions=CODAL_INSTRUCTION_TEMPLATE,
                     grade_pattern=r"GRADE:\s*(\d+)/10",
-                    model="openai/gpt-4o-mini"
+                    model=self.judge_model
                 )
                 
                 return Task(

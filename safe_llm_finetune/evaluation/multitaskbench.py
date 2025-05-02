@@ -1,14 +1,8 @@
 """Evaluator running MultiTaskBench Safety eval on specified model"""
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
-from inspect_ai import eval as inspect_eval
-from inspect_ai import Task, task, model
-from inspect_ai.log import EvalLog
+from inspect_ai import Task, task
 from inspect_ai.dataset import csv_dataset, FieldSpec
 from inspect_ai.solver import generate, chain_of_thought
 from inspect_ai.scorer import model_graded_qa, accuracy
-from transformers import PreTrainedModel, PreTrainedTokenizer
 import os
 import openai
 import requests
@@ -21,7 +15,7 @@ openai.api_key = OPENAI_API_KEY
 
 
 class MultiTaskBench(Evaluator):
-    def __init__(self, model_name, file_path, debug= False):
+    def __init__(self, model_name, file_path, debug= False, judge_model ="openai/gpt-4o-mini"):
         super().__init__(model_name, file_path, debug)
         
         # downloading multitaskbench dataset, stored in data folder locally
@@ -48,6 +42,7 @@ class MultiTaskBench(Evaluator):
             )
             
         )
+        self.judge_model = judge_model
            
        
        
@@ -58,7 +53,7 @@ class MultiTaskBench(Evaluator):
             template= REFUSAL_MODEL_GRADED_QA_TEMPLATE,
             instructions= REFUSAL_INSTRUCTION_TEMPLATE,
             grade_pattern=r"GRADE: ([YNyn])",
-            model="openai/gpt-4o-mini",
+            model=self.judge_model
             )
         
         return Task(
