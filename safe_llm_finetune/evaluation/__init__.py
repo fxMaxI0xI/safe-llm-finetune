@@ -6,6 +6,7 @@ from .base import Evaluator
 # Import specific evaluator implementations
 from .multitaskbench import MultiTaskBench
 from .airbench import AirBench
+from .codalbench import CodalBench
 
 
 
@@ -18,6 +19,7 @@ __all__ = [
     
     # Evaluator implementations
     "MultiTaskBench",
-    "AirBench"
+    "AirBench",
+    "CodalBench"
  
 ]

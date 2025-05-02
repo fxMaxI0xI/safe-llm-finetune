@@ -7,14 +7,14 @@ from inspect_ai import Task, task, model
 from inspect_ai.log import EvalLog
 from inspect_ai.dataset import csv_dataset, FieldSpec
 from inspect_ai.solver import generate, chain_of_thought
-from inspect_ai.scorer import model_graded_qa
+from inspect_ai.scorer import model_graded_qa, accuracy
 from transformers import PreTrainedModel, PreTrainedTokenizer
 import os
 import openai
 import requests
 from safe_llm_finetune.evaluation.base import Evaluator
 from safe_llm_finetune.evaluation.prompt_templates import REFUSAL_MODEL_GRADED_QA_TEMPLATE, REFUSAL_INSTRUCTION_TEMPLATE
-
+from safe_llm_finetune.evaluation.metrics import attack_success_rate, get_refusal_value_to_float
 HF = os.getenv("HF")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
@@ -49,7 +49,7 @@ class MultiTaskBench(Evaluator):
             
         )
            
-        
+       
        
     @task        
     def create_task(self):
@@ -64,6 +64,10 @@ class MultiTaskBench(Evaluator):
         return Task(
             dataset= self.dataset,
             solver=[chain_of_thought(),generate()],
-            scorer=detect_refusal
+            scorer=detect_refusal,
+            metrics=[
+                attack_success_rate(),
+                accuracy(to_float=get_refusal_value_to_float()),
+            ]
         )      
         

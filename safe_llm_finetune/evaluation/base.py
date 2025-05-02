@@ -29,7 +29,7 @@ class Evaluator(ABC):
         self.debug = debug
 
     @abstractmethod
-    def create_task(self) -> Task:
+    def create_task(self) -> Task | List[Task]:
         """creates a inspect_ai task object from the given dataset with suitable solver and scorer
 
         Returns:
@@ -37,7 +37,7 @@ class Evaluator(ABC):
         """
         pass
 
-    def run(self) -> EvalLog:
+    def runEval(self) -> EvalLog:
         """runs inpects inate eval() function
 
         Returns:
