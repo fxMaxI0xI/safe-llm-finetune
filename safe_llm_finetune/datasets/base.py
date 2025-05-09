@@ -1,137 +1,79 @@
-"""
-Abstract base classes for dataset handling.
-"""
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
-import pandas as pd
+from typing import Dict, List, Tuple, Any, Optional, Union
+import torch
+from torch.utils.data import Dataset
 
 
-class DatasetFilter(ABC):
-    """Abstract base class for dataset filters."""
+class DatasetProcessor(ABC):
+    """
+    Abstract base class for dataset preprocessing in SFT and DPO pipelines.
+    Implementations should inherit from this class and implement the required methods.
+    """
     
+    def __init__(self, dataset_path: str, tokenizer: Any, max_length: int, 
+             sample_size: Optional[Union[float, int]] = None, seed: int = 42):
+        """
+        Initialize the dataset processor.
+        
+        Args:
+            dataset_path: Path to the dataset or identifier
+            tokenizer: Tokenizer to be used for preprocessing
+            max_length: Maximum sequence length for tokenization
+            sample_size: Optional sampling size, can be:
+                        - float between 0 and 1: represents percentage of dataset to use
+                        - int > 1: represents absolute number of examples to use
+                        - None: use all examples
+            seed: Random seed for reproducibility
+        """
+        self.dataset_path = dataset_path
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+        self.sample_size = sample_size
+        self.seed = seed
+        self.loaded_data = None
+        
+        # Validate sample_size
+        if sample_size is not None:
+            if isinstance(sample_size, float):
+                if not (0 < sample_size <= 1):
+                    raise ValueError("If sample_size is a float, it must be between 0 and 1")
+                else: 
+                    self.percentage = True
+            elif isinstance(sample_size, int):
+                if sample_size <= 0:
+                    raise ValueError("If sample_size is an int, it must be greater than 0")
+                else: 
+                    self.percentage = False
+        
+        
     @abstractmethod
-    def filter(self, dataset: pd.DataFrame) -> pd.DataFrame:
+    def load_data(self) -> None:
         """
-        Filter the dataset based on specific criteria.
-        
-        Args:
-            dataset: Input dataset to filter
-            
-        Returns:
-            Filtered dataset
-        """
-        pass
-
-
-class DatasetPreprocessor(ABC):
-    """Abstract base class for dataset preprocessors."""
-    
-    @abstractmethod
-    def preprocess(self, dataset: pd.DataFrame) -> pd.DataFrame:
-        """
-        Preprocess the dataset.
-        
-        Args:
-            dataset: Input dataset to preprocess
-            
-        Returns:
-            Preprocessed dataset
-        """
-        pass
-
-
-class Dataset(ABC):
-    """Abstract base class for datasets."""
-    
-    def __init__(
-        self,
-        filters: Optional[List[DatasetFilter]] = None,
-        preprocessors: Optional[List[DatasetPreprocessor]] = None
-    ):
-        """
-        Initialize dataset with optional filters and preprocessors.
-        
-        Args:
-            filters: List of dataset filters to apply
-            preprocessors: List of dataset preprocessors to apply
-        """
-        self.filters = filters or []
-        self.preprocessors = preprocessors or []
-        self._data = None
-    
-    @abstractmethod
-    def load(self, path: str) -> pd.DataFrame:
-        """
-        Load dataset from path.
-        
-        Args:
-            path: Path to dataset
-            
-        Returns:
-            Loaded dataset
+        Load the raw dataset from the source.
+        Stores dataset in self.loaded_data
         """
         pass
     
-    def apply_filters(self, data: pd.DataFrame) -> pd.DataFrame:
-        """
-        Apply all filters to the dataset.
-        
-        Args:
-            data: Input dataset
-            
-        Returns:
-            Filtered dataset
-        """
-        for filter_obj in self.filters:
-            data = filter_obj.filter(data)
-        return data
-    
-    def apply_preprocessors(self, data: pd.DataFrame) -> pd.DataFrame:
-        """
-        Apply all preprocessors to the dataset.
-        
-        Args:
-            data: Input dataset
-            
-        Returns:
-            Preprocessed dataset
-        """
-        for preprocessor in self.preprocessors:
-            data = preprocessor.preprocess(data)
-        return data
-    
-    def process(self, path: str) -> pd.DataFrame:
-        """
-        Load, filter, and preprocess dataset.
-        
-        Args:
-            path: Path to dataset
-            
-        Returns:
-            Processed dataset
-        """
-        data = self.load(path)
-        data = self.apply_filters(data)
-        data = self.apply_preprocessors(data)
-        self._data = data
-        return data
-    
     @abstractmethod
-    def __iter__(self) -> Iterator[Any]:
-        """Return iterator over dataset items."""
+    def get_sft_dataset(self) -> Dataset:
+        """
+        Get a dataset ready for Supervised Fine-Tuning (SFT).
+        
+            
+        Returns:
+            A hf Dataset ready for SFT training in format:
+            {"prompt": "<prompt text>", "completion": "<ideal generated text>"}
+        """
         pass
     
     @abstractmethod
-    def __len__(self) -> int:
-        """Return dataset length."""
+    def get_dpo_dataset(self, num_samples: Optional[int] = None) -> Dataset:
+        """
+        Get a dataset ready for Direct Preference Optimization (DPO).
+            
+        Returns:
+            A hf Dataset ready for DPO training with prompt, chosen and rejected responses
+        """
         pass
     
-    @abstractmethod
-    def save(self, path: str) -> None:
-        """
-        Save processed dataset.
-        
-        Args:
-            path: Path to save dataset
-        """
-        pass
+    

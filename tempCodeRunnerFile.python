@@ -1,0 +1,9 @@
+
+for k in range(100):
+    y= 0
+    for n in range(k):
+        y += 0.2**(k-n) * 0.8**(n)
+        
+    if y >= 0.99:
+        print(k)
+        break

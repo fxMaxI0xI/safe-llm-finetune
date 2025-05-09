@@ -3,10 +3,19 @@ from typing import Any, Dict, Optional
 from transformers import PreTrainedModel, PreTrainedTokenizer
 from trl import DPOTrainer, DPOConfig as TRLDPOConfig
 from datasets import Dataset, load_dataset
+from dataclasses import dataclass
 
-from base import FineTuningMethod, TrainingConfig, DPOConfig
+from base import FineTuningMethod, TrainingConfig
 from checkpoint import CheckpointManager
 
+@dataclass
+class DPOConfig:
+    """Configuration for DPO training."""
+    beta: float = 0.1  # KL penalty coefficient
+    label_smoothing: float = 0.0
+    loss_type: str = "sigmoid"  # or "hinge"
+    label_pad_token_id: int = -100
+    learning_rate: float = 1e-6
 
 class DPOFineTuning(FineTuningMethod):
     """DPO fine-tuning method implementation."""

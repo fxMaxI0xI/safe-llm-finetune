@@ -50,5 +50,4 @@ class FullFineTuning(FineTuningMethod):
         trainer.train()
         return model
 
-    def evaluate(self, model, tokenizer, dataset):
-        return {"status": "evaluation not implemented yet"}  # optional
+
