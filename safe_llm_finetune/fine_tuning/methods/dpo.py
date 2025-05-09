@@ -28,9 +28,7 @@ class DPOFineTuning(FineTuningMethod):
     
     
     def train(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer, 
-          dataset_processor: DatasetProcessor, config: TrainingConfig, 
-          prompt_column: str = 'prompt', chosen_column: str = 'chosen', 
-          rejected_column: str = 'rejected', split: str = 'train') -> PreTrainedModel:
+          dataset_processor: DatasetProcessor, config: TrainingConfig) -> PreTrainedModel:
         """Train a model usig DPO.
 
         Args:

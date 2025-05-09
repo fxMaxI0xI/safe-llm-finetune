@@ -4,8 +4,8 @@ from datasets import Dataset, load_dataset
 from safe_llm_finetune.datasets.base import DatasetProcessor
 
 class CodeUltraFeedback(DatasetProcessor):
-    def __init__(self, tokenizer, max_length, sample_size = None, seed = 42):
-        super().__init__("coseal/CodeUltraFeedback_binarized", tokenizer, max_length, sample_size, seed)
+    def __init__(self, sample_size = None):
+        super().__init__("coseal/CodeUltraFeedback_binarized", sample_size)
     
     def load_data(self) -> None:
         """

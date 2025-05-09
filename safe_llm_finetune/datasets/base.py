@@ -10,8 +10,7 @@ class DatasetProcessor(ABC):
     Implementations should inherit from this class and implement the required methods.
     """
     
-    def __init__(self, dataset_path: str, tokenizer: Any, max_length: int, 
-             sample_size: Optional[Union[float, int]] = None, seed: int = 42):
+    def __init__(self, dataset_path: str, sample_size: Optional[Union[float, int]] = None):
         """
         Initialize the dataset processor.
         
@@ -26,10 +25,7 @@ class DatasetProcessor(ABC):
             seed: Random seed for reproducibility
         """
         self.dataset_path = dataset_path
-        self.tokenizer = tokenizer
-        self.max_length = max_length
         self.sample_size = sample_size
-        self.seed = seed
         self.loaded_data = None
         
         # Validate sample_size
