@@ -27,8 +27,7 @@ class DPOFineTuning(FineTuningMethod):
     
     
     
-    def train(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer, 
-          dataset_processor: DatasetProcessor, config: TrainingConfig) -> PreTrainedModel:
+    def train(self, dataset_processor: DatasetProcessor, config: TrainingConfig) -> PreTrainedModel:
         """Train a model usig DPO.
 
         Args:
@@ -45,9 +44,10 @@ class DPOFineTuning(FineTuningMethod):
     
         
         # Create reference model (frozen copy of the original model)
-        ref_model = self.model_adapter.load_model(model.config._name_or_path)
+        ref_model = self.model_adapter.load_model()
         ref_model.eval()
         
+        model = self.model_adapter.load_model()
     
         
         # Configure DPO trainer
@@ -72,11 +72,11 @@ class DPOFineTuning(FineTuningMethod):
         
         # Initialize DPO trainer
         dpo_trainer = DPOTrainer(
-          model=model,
+          model= model,
           ref_model=ref_model,
           args=dpo_trainer_config,
           train_dataset=train_dataset,
-          processing_class=tokenizer, 
+          processing_class=self.model_adapter.load_tokenizer(), 
       )
         
         # Train the model

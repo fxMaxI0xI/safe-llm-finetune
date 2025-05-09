@@ -106,7 +106,7 @@ class FineTuningMethod(ABC):
     
     
     @abstractmethod
-    def train(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer, 
+    def train(self,
               dataset_processor: DatasetProcessor, config: TrainingConfig) -> PreTrainedModel:
         """
         Fine-tune the model.
