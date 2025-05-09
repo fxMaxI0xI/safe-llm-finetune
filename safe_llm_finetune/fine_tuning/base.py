@@ -37,13 +37,13 @@ class TrainingConfig:
 class ModelAdapter(ABC):
     """Abstract base class for model adapters."""
     
+    def __init__(self, model_name):
+       self.model_name = model_name
+    
     @abstractmethod
-    def load_model(self, model_id: str) -> PreTrainedModel:
+    def load_model(self) -> PreTrainedModel:
         """
         Load a model from HuggingFace.
-        
-        Args:
-            model_id: HuggingFace model identifier
             
         Returns:
             Loaded model
@@ -51,28 +51,16 @@ class ModelAdapter(ABC):
         pass
     
     @abstractmethod
-    def load_tokenizer(self, model_id: str) -> PreTrainedTokenizer:
+    def load_tokenizer(self) -> PreTrainedTokenizer:
         """
         Load a tokenizer from HuggingFace.
-        
-        Args:
-            model_id: HuggingFace model identifier
             
         Returns:
             Loaded tokenizer
         """
         pass
     
-    @abstractmethod
-    def save_model(self, model: PreTrainedModel, path: str) -> None:
-        """
-        Save a model.
-        
-        Args:
-            model: Model to save
-            path: Path to save model
-        """
-        pass
+    def load_quantized_model(self, )
     
     @abstractmethod
     def generate(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer, 

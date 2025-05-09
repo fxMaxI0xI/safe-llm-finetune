@@ -5,6 +5,7 @@ from transformers import Trainer, TrainingArguments
 from datasets import Dataset, load_dataset
 from peft import LoraConfig, get_peft_model, TaskType
 from safe_llm_finetune.datasets.base import DatasetProcessor
+from trl import SFTConfig, SFTTrainer
 
 from base import FineTuningMethod, TrainingConfig, CheckpointConfig
 from checkpoint import CheckpointManager
@@ -64,7 +65,7 @@ class LoRAFineTuning(FineTuningMethod):
         
         
         # Configure training arguments
-        training_args = TrainingArguments(
+        training_args = SFTConfig(
             output_dir=str(config.checkpoint_config.checkpoint_dir),
             learning_rate=config.learning_rate,
             num_train_epochs=config.num_train_epochs,
@@ -85,7 +86,7 @@ class LoRAFineTuning(FineTuningMethod):
         )
         
         # Initialize trainer
-        trainer = Trainer(
+        trainer = SFTTrainer(
             model=peft_model,
             args=training_args,
             train_dataset=train_data,

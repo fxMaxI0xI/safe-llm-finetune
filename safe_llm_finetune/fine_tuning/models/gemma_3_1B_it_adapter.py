@@ -2,7 +2,12 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from safe_llm_finetune.fine_tuning.base import ModelAdapter
 
 
-class GemmaAdapter(ModelAdapter):
+class Gemma_3_1B_it(ModelAdapter):
+    def __init__(self):
+        super().__init__("google/gemma-3-1b-it")
+    
+            
+            
     def load_model(self, model_id: str):
         return AutoModelForCausalLM.from_pretrained(
             model_id,
