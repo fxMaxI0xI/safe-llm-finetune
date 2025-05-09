@@ -5,10 +5,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-
+from datasets import Dataset
 import torch
 from transformers import PreTrainedModel, PreTrainedTokenizer
-
+from safe_llm_finetune.datasets.base import DatasetProcessor
 
 @dataclass
 class CheckpointConfig:
@@ -104,29 +104,17 @@ class FineTuningMethod(ABC):
         """
         self.model_adapter = model_adapter
     
-    @abstractmethod
-    def prepare_dataset(self, dataset: Any) -> Any:
-        """
-        Prepare dataset for fine-tuning.
-        
-        Args:
-            dataset: Input dataset
-            
-        Returns:
-            Prepared dataset
-        """
-        pass
     
     @abstractmethod
     def train(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer, 
-              dataset: Any, config: TrainingConfig) -> PreTrainedModel:
+              dataset_processor: DatasetProcessor, config: TrainingConfig) -> PreTrainedModel:
         """
         Fine-tune the model.
         
         Args:
             model: Model to fine-tune
             tokenizer: Tokenizer to use
-            dataset: Dataset to use for fine-tuning
+            dataset: Dataset processor to use for fine-tuning
             config: Training configuration
             
         Returns:

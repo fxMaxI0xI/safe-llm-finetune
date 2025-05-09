@@ -2,9 +2,10 @@ import torch
 from typing import Any, Dict, Optional
 from transformers import PreTrainedModel, PreTrainedTokenizer
 from trl import DPOTrainer, DPOConfig as TRLDPOConfig
-from datasets import Dataset, load_dataset
+from datasets import Dataset
 from dataclasses import dataclass
 
+from safe_llm_finetune.datasets.base import DatasetProcessor
 from base import FineTuningMethod, TrainingConfig
 from checkpoint import CheckpointManager
 
@@ -24,65 +25,10 @@ class DPOFineTuning(FineTuningMethod):
         super().__init__(model_adapter)
         self.dpo_config = dpo_config or DPOConfig()
     
-    def prepare_dataset(self, dataset: Any, prompt_column: str = 'prompt', 
-                   chosen_column: str = 'chosen', rejected_column: str = 'rejected',
-                   split: str = 'train') -> Dataset:
-        """
-        Prepare dataset for DPO training.
-        
-        Args:
-            dataset: Either a dataset name (str) from HF Hub, dict, or Dataset object
-            prompt_column: Name of the column containing prompts (default: 'prompt')
-            chosen_column: Name of the column containing chosen responses (default: 'chosen')
-            rejected_column: Name of the column containing rejected responses (default: 'rejected')
-            split: Dataset split to load (default: 'train')
-        
-        Returns:
-            Dataset object with properly mapped columns for DPO training
-        """
-        # Load dataset if a string (HF dataset name) is provided
-        if isinstance(dataset, str):
-            try:
-                loaded_dataset = load_dataset(dataset, split=split)
-            except Exception as e:
-                raise ValueError(f"Failed to load dataset '{dataset}' from Hugging Face Hub: {str(e)}")
-        elif isinstance(dataset, dict):
-            loaded_dataset = Dataset.from_dict(dataset)
-        elif isinstance(dataset, Dataset):
-            loaded_dataset = dataset
-        else:
-            raise ValueError(f"Unsupported dataset type: {type(dataset)}. Expected str (HF dataset name), dict, or Dataset.")
-        
-        # Check if all required columns exist in the dataset
-        available_columns = set(loaded_dataset.column_names)
-        required_mappings = {
-            prompt_column: 'prompt',
-            chosen_column: 'chosen', 
-            rejected_column: 'rejected'
-        }
-        
-        missing_columns = []
-        for source_col, target_col in required_mappings.items():
-            if source_col not in available_columns:
-                missing_columns.append(source_col)
-        
-        if missing_columns:
-            raise ValueError(f"Dataset missing required columns: {missing_columns}. "
-                        f"Available columns: {list(available_columns)}")
-        
-        # Rename columns to the standard format if needed
-        rename_dict = {}
-        for source_col, target_col in required_mappings.items():
-            if source_col != target_col:
-                rename_dict[source_col] = target_col
-        
-        if rename_dict:
-            loaded_dataset = loaded_dataset.rename_columns(rename_dict)
-        
-        return loaded_dataset
+    
     
     def train(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer, 
-          dataset: Any, config: TrainingConfig, 
+          dataset_processor: DatasetProcessor, config: TrainingConfig, 
           prompt_column: str = 'prompt', chosen_column: str = 'chosen', 
           rejected_column: str = 'rejected', split: str = 'train') -> PreTrainedModel:
         """Train a model usig DPO.
@@ -90,21 +36,15 @@ class DPOFineTuning(FineTuningMethod):
         Args:
             model (PreTrainedModel): pretrained model to be fine-tuned with DPO
             tokenizer (PreTrainedTokenizer): tokenizer of pretrained model
-            dataset (Any): Either a dataset name (str) from HF Hub, dict, or Dataset object
+            dataset (DatasetProcessor): DatasetProcessor Object of desired training dataset
             config (TrainingConfig): Training configuration containing among other things checkpoint config. Since DPO uses very small learning rates this is defaulted in the DPO config
 
         Returns:
             PreTrainedModel: fine-tuned model
         """
         
-        # Prepare dataset
-        train_dataset = self.prepare_dataset(
-        dataset,
-        prompt_column=prompt_column,
-        chosen_column=chosen_column,
-        rejected_column=rejected_column,
-        split=split
-    )
+        train_dataset = dataset_processor.get_dpo_dataset()
+    
         
         # Create reference model (frozen copy of the original model)
         ref_model = self.model_adapter.load_model(model.config._name_or_path)
