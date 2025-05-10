@@ -106,8 +106,7 @@ class ModelAdapter(ABC):
         pass
     
     @abstractmethod
-    def generate(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer, 
-                 prompt: str, **kwargs) -> str:
+    def generate(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer, prompt: str, **kwargs) -> str:
         """
         Generate text using the model.
         
@@ -122,11 +121,37 @@ class ModelAdapter(ABC):
         """
         pass
     @abstractmethod
-    def get_name(self):
+    def get_name(self) -> str :
         """
         Returns name of model
         """
         pass
+    
+    @abstractmethod
+    def get_lora_modules(self) -> list[str]:
+        """
+        Returns the target modules for LoRA fine-tuning
+        
+        By default this returns only query and key
+        """
+        pass
+    
+    @abstractmethod
+    def get_qlora_modules(self)-> list[str]:
+        """
+        Returns the target modules for QLoRA fine-tuning
+        
+        By default returns attention and mlp modules
+        """
+        pass
+    
+    @abstractmethod
+    def get_available_modules(self) -> dict[str, list[str]]:
+        """
+        Returns all available modules that can be targeted for fine-tuning in Gemma
+        """
+        pass
+    
 
 
 class FineTuningMethod(ABC):

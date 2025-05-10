@@ -1,30 +1,88 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from safe_llm_finetune.fine_tuning.base import ModelAdapter
+from transformers import PreTrainedModel, PreTrainedTokenizer, AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 
-class Gemma_3_1B_it(ModelAdapter):
-	def __init__(self):
-		super().__init__("google/gemma-3-1b-it")
-	
-			
-			
-	def load_model(self, model_id: str):
-		return AutoModelForCausalLM.from_pretrained(
-			model_id,
-			trust_remote_code=True,
-			device_map="auto"
-		)
+from safe_llm_finetune.fine_tuning.base import ModelAdapter, BnBQuantizationConfig 
 
-	def load_tokenizer(self, model_id: str):
-		return AutoTokenizer.from_pretrained(
-			model_id,
-			use_fast=True
-		)
 
-	def save_model(self, model, path: str):
-		model.save_pretrained(path)
+class GemmaAdapter(ModelAdapter):
+    """Adapter for google/gemma-3-1B-it model."""
+    
+    def __init__(self, model_name="google/gemma-3-1B-it"):
+        super().__init__(model_name)
+    
+    def load_model(self) -> PreTrainedModel:
+        """
+        Load the Gemma model from HuggingFace.
+            
+        Returns:
+            Loaded model
+        """
+        model = AutoModelForCausalLM.from_pretrained(
+            self.model_name,
+            device_map="auto",
+            trust_remote_code=True
+        )
+        return model
+    
+    def load_tokenizer(self) -> PreTrainedTokenizer:
+        """
+        Load the Gemma tokenizer from HuggingFace.
+            
+        Returns:
+            Loaded tokenizer
+        """
+        tokenizer = AutoTokenizer.from_pretrained(
+            self.model_name,
+            trust_remote_code=True
+        )
+        return tokenizer
+    
+    def load_quantized_model(self, quantization_config: BnBQuantizationConfig) -> PreTrainedModel:
+        """ Load a model from HuggingFace in specified quantization
 
-	def generate(self, model, tokenizer, prompt: str, **kwargs) -> str:
-		inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-		outputs = model.generate(**inputs, max_new_tokens=100, **kwargs)
-		return tokenizer.decode(outputs[0], skip_special_tokens=True)
+        Args:
+            quantization_config (BnBQuantizationConfig): config for quantization
+
+        Returns:
+            PreTrainedModel: model loaded in specified quantization
+        """
+        bnb_config = quantization_config.to_bnb_config()
+        
+        model = AutoModelForCausalLM.from_pretrained(
+            self.model_name,
+            quantization_config=bnb_config,
+            device_map="auto",
+            trust_remote_code=True
+        )
+        return model
+    
+    
+    def get_name(self):
+        """
+        Returns name of model
+        """
+        return "gemma-3-1B-it"
+    
+    def get_available_modules(self):
+        """
+        Returns all available modules that can be targeted for fine-tuning in Gemma
+        """
+        # All potential target modules in Gemma model
+        return {
+            # Attention modules
+            "attention": ["q_proj", "k_proj", "v_proj", "o_proj"],
+            # MLP modules
+            "mlp": ["gate_proj", "up_proj", "down_proj"],
+            # Layer norms
+            "layer_norms": ["input_layernorm", "post_attention_layernorm"]
+        }
+    
+    def get_lora_modules(self):
+        available = self.get_available_modules()
+        # Most efficient default for LoRA: focus on query and key projections
+        return ["q_proj", "k_proj"]
+    
+    def get_qlora_modules(self):
+        available = self.get_available_modules()
+        # QLoRA often includes more modules: attention + MLP
+        return available["attention"] + available["mlp"]
