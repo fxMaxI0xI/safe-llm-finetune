@@ -10,7 +10,9 @@ from datasets import Dataset
 from safe_llm_finetune.datasets.base import DatasetProcessor
 from safe_llm_finetune.fine_tuning.base import FineTuningMethod, TrainingConfig
 from safe_llm_finetune.fine_tuning.checkpoint import CheckpointManager
+import os
 
+HF = os.getenv("HF")
 
 @dataclass
 class DPOConfig:
@@ -43,17 +45,22 @@ class DPOFineTuning(FineTuningMethod):
             PreTrainedModel: fine-tuned model
         """
         
+        # 0) set training run name 
+        name = HF + "-" + self.model_adapter.get_name() + "-" + dataset_processor.get_name()+ "-DPO"
+        
+        # 1) get training data
         train_dataset = dataset_processor.get_dpo_dataset()
     
+        # 2) load model and tokenizer
+        model = self.model_adapter.load_model()
+        tokenizer = self.model_adapter.load_tokenizer() 
         
-        # Create reference model (frozen copy of the original model)
+        # 3) Create reference model (frozen copy of the original model)
         ref_model = self.model_adapter.load_model()
         ref_model.eval()
-        
-        model = self.model_adapter.load_model()
     
         
-        # Configure DPO trainer
+        # 4) Configure DPO trainer
         dpo_trainer_config = TRLDPOConfig(
             output_dir=str(config.checkpoint_config.checkpoint_dir),
             learning_rate=self.dpo_config.learning_rate,
@@ -63,6 +70,10 @@ class DPOFineTuning(FineTuningMethod):
             warmup_steps=config.warmup_steps,
             weight_decay=config.weight_decay,
             fp16=config.fp16,
+            push_to_hub=config.checkpoint_config.push_to_hub,
+            hub_model_id= name,
+            hub_strategy=config.checkpoint_config.hub_strategy,
+            save_steps=config.checkpoint_config.save_steps,
             save_steps=config.checkpoint_config.save_steps,
             save_total_limit=config.checkpoint_config.save_total_limit,
             save_strategy=config.checkpoint_config.save_strategy,
@@ -73,16 +84,16 @@ class DPOFineTuning(FineTuningMethod):
             label_pad_token_id=self.dpo_config.label_pad_token_id,
         )
         
-        # Initialize DPO trainer
+        # 5) Initialize DPO trainer
         dpo_trainer = DPOTrainer(
           model= model,
           ref_model=ref_model,
           args=dpo_trainer_config,
           train_dataset=train_dataset,
-          processing_class=self.model_adapter.load_tokenizer(), 
+          processing_class=tokenizer, 
       )
         
-        # Train the model
+        # 6) Train the model
         dpo_trainer.train()
         
         return model

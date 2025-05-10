@@ -4,10 +4,10 @@ Abstract base classes for fine-tuning methods and models.
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Literal
 
 import torch
-from transformers import PreTrainedModel, PreTrainedTokenizer
+from transformers import PreTrainedModel, PreTrainedTokenizer, BitsAndBytesConfig
 
 from safe_llm_finetune.datasets.base import Dataset, DatasetProcessor
 
@@ -19,6 +19,9 @@ class CheckpointConfig:
     save_steps: int = 500
     save_total_limit: int = 5
     save_strategy: str = "steps"
+    hub_model_id: str
+    hub_strategy : str ="checkpoint"
+    push_to_hub : bool = True
 
 
 @dataclass
@@ -33,6 +36,33 @@ class TrainingConfig:
     fp16: bool = False
     checkpoint_config: Optional[CheckpointConfig] = None
     seed: int = 42
+    optim: str = "adamw_torch"
+    
+@dataclass
+class BnBQuantizationConfig:
+    bits: Literal[4, 8] = 4  # Either 4-bit or 8-bit quantization
+    use_double_quant: bool = True  # Double quantization 
+    quant_type: Literal["nf4", "fp4"] = "nf4"  # nf4 (normalized float 4) or fp4
+    compute_dtype: torch.dtype = torch.float16  # Computation precision
+    
+    def __post_init__(self):
+        # Validation
+        if self.bits not in [4, 8]:
+            raise ValueError("BitsAndBytes only supports 4-bit or 8-bit quantization")
+        
+        if self.bits == 4 and self.quant_type not in ["nf4", "fp4"]:
+            raise ValueError("4-bit quantization only supports 'nf4' or 'fp4' quant_type")
+    
+    def to_bnb_config(self) -> BitsAndBytesConfig:
+        """Convert to BitsAndBytesConfig object for HuggingFace Transformers"""
+        return BitsAndBytesConfig(
+            load_in_4bit=(self.bits == 4),
+            load_in_8bit=(self.bits == 8),
+            bnb_4bit_use_double_quant=self.use_double_quant,
+            bnb_4bit_quant_type=self.quant_type,
+            bnb_4bit_compute_dtype=self.compute_dtype
+        )
+
 
 
 
@@ -62,7 +92,17 @@ class ModelAdapter(ABC):
         """
         pass
     
-    def load_quantized_model(self):
+    
+    @abstractmethod
+    def load_quantized_model(self, quantization_config: BnBQuantizationConfig) -> PreTrainedModel:
+        """ Load a model from HuggingFace in specifiec quantization
+
+        Args:
+            quantization_config (BnBQuantizationConfig): config for quantization
+
+        Returns:
+            PreTrainedModel: model loaded in specified quantization
+        """
         pass
     
     @abstractmethod
@@ -81,6 +121,12 @@ class ModelAdapter(ABC):
             Generated text
         """
         pass
+    @abstractmethod
+    def get_name(self):
+        """
+        Returns name of model
+        """
+        pass
 
 
 class FineTuningMethod(ABC):
@@ -97,8 +143,7 @@ class FineTuningMethod(ABC):
     
     
     @abstractmethod
-    def train(self,
-              dataset_processor: DatasetProcessor, config: TrainingConfig) -> PreTrainedModel:
+    def train(self, dataset_processor: DatasetProcessor, config: TrainingConfig) -> PreTrainedModel:
         """
         Fine-tune the model.
         

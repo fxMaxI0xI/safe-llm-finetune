@@ -16,6 +16,10 @@ from trl import SFTConfig, SFTTrainer
 from datasets import Dataset, load_dataset
 from safe_llm_finetune.datasets.base import DatasetProcessor
 
+import os
+
+HF = os.getenv("HF")
+
 
 class LoRAConfig:
     """Configuration for LoRA Supervised Fine-Tuning."""
@@ -50,7 +54,7 @@ class LoRAFineTuning(FineTuningMethod):
     
     
     
-    def train(self, dataset_processor: DatasetProcessor, config: TrainingConfig) -> PreTrainedModel:
+    def train(self, dataset_processor: DatasetProcessor, config: TrainingConfig, identifier: Optional[str]= None) -> PreTrainedModel:
         """
         Train a model using LoRA for Supervised Fine-Tuning.
 
@@ -61,16 +65,22 @@ class LoRAFineTuning(FineTuningMethod):
         Returns:
             PreTrainedModel: fine-tuned model with LoRA for SFT
         """
+        # 0) set training run name 
+        name = HF + "/" + self.model_adapter.get_name() + "/" + dataset_processor.get_name()+ "/LoRA"+ identifier
         
-        # get dataset
+        # 1) get dataset
         train_data = dataset_processor.get_sft_dataset()
         
-        # Setup LoRA on the model
+        # 2) load model and tokenizer
         model = self.model_adapter.load_model()
+        tokenizer = self.model_adapter.load_tokenizer()
+        
+        # 3) Setup LoRA on the model
         peft_model = get_peft_model(model, self.lora_config)
         
         
-        # Configure training arguments
+        
+        # 4) Configure training arguments
         training_args = SFTConfig(
             output_dir=str(config.checkpoint_config.checkpoint_dir),
             learning_rate=config.learning_rate,
@@ -80,6 +90,9 @@ class LoRAFineTuning(FineTuningMethod):
             warmup_steps=config.warmup_steps,
             weight_decay=config.weight_decay,
             fp16=config.fp16,
+            push_to_hub=config.checkpoint_config.push_to_hub,
+            hub_model_id= name,
+            hub_strategy=config.checkpoint_config.hub_strategy,
             save_steps=config.checkpoint_config.save_steps,
             save_total_limit=config.checkpoint_config.save_total_limit,
             save_strategy=config.checkpoint_config.save_strategy,
@@ -88,21 +101,19 @@ class LoRAFineTuning(FineTuningMethod):
             logging_steps=10,
             remove_unused_columns=False,
             gradient_accumulation_steps=1,
-            optim="adamw_torch"
+            optim=config.optim
         )
         
-        # Initialize trainer
+        # 5) Initialize trainer
         trainer = SFTTrainer(
             model=peft_model,
             args=training_args,
             train_dataset=train_data,
-            processing_class=self.model_adapter.load_tokenizer()
+            processing_class=tokenizer
         )
         
-        # Train the model
+        # 6) Train the model
         trainer.train()
-        
-        # Save the LoRA adapters
-        peft_model.save_pretrained(config.checkpoint_config.checkpoint_dir)
+
         
         return peft_model

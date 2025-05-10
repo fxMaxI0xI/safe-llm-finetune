@@ -55,6 +55,7 @@ class CodeUltraFeedback(DatasetProcessor):
         self.loaded_data = self.loaded_data.remove_columns([col for col in self.loaded_data.column_names if col not in ["instruction", "chosen", "rejected"]])
         return self.loaded_data.rename_column("instruction", "prompt")
     
-        
+    def get_name(self):
+        return "CodeUltraFeedback"
     
     

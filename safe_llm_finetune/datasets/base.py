@@ -73,4 +73,9 @@ class DatasetProcessor(ABC):
         """
         pass
     
-    
+    @abstractmethod
+    def get_name(self):
+        """
+        returns name of dataset
+        """
+        pass

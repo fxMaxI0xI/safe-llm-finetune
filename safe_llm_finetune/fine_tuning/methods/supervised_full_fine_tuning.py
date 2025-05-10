@@ -18,7 +18,8 @@ class SupervisedFullFineTuning(FineTuningMethod):
 
         Args:
             dataset_processor: Processor providing get_sft_dataset() with prompt/completion pairs
-        """        # 1) Load datasets
+        """        
+        # 1) Load datasets
         train_ds = dataset_processor.get_sft_dataset()
 
         # 2) Load model & tokenizer
