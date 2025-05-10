@@ -1,7 +1,8 @@
-from typing import  Any, Optional
-from datasets import Dataset, load_dataset
+from typing import Any, Optional
 
+from datasets import Dataset, load_dataset
 from safe_llm_finetune.datasets.base import DatasetProcessor
+
 
 class CodeUltraFeedback(DatasetProcessor):
     def __init__(self, sample_size = None):

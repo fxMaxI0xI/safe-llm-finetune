@@ -16,6 +16,8 @@ classifiers = [
     "License :: OSI Approved :: MIT License"
 ]
 dependencies = [
+    "inspect-ai>=0.3.94",
+    "inspect-evals",
     "ipython",
     "jupyterlab",
     "loguru",
@@ -23,13 +25,18 @@ dependencies = [
     "mkdocs",
     "notebook",
     "numpy",
+    "openai>=1.78.0",
     "pandas",
+    "peft>=0.15.2",
     "pip",
     "pytest",
     "python-dotenv",
     "ruff",
     "scikit-learn",
+    "torch>=2.7.0",
     "tqdm",
+    "transformers>=4.51.3",
+    "trl>=0.17.0",
     "typer",
 ]
 requires-python = "==3.13.3"
@@ -46,4 +53,7 @@ extend-select = ["I"]  # Add import sorting
 [tool.ruff.lint.isort]
 known-first-party = ["safe_llm_finetune"]
 force-sort-within-sections = true
+
+[tool.uv.sources]
+inspect-evals = { git = "https://github.com/UKGovernmentBEIS/inspect_evals" }
 

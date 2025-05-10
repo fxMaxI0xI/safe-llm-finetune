@@ -2,11 +2,12 @@
 Abstract base classes for evaluation functionality.
 """
 from abc import ABC, abstractmethod
-from typing import List
-from inspect_ai import eval as inspect_eval
-from inspect_ai import Task
-from inspect_ai.log import EvalLog
 import os
+from typing import List
+
+from inspect_ai import Task
+from inspect_ai import eval as inspect_eval
+from inspect_ai.log import EvalLog
 
 HF = os.getenv("HF")
 

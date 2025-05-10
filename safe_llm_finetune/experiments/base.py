@@ -7,9 +7,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type, Union
 
-from ..datasets.base import Dataset
-from ..evaluation.base import Evaluator, SafetyEvaluator
-from ..fine_tuning.base import FineTuningMethod, ModelAdapter, TrainingConfig
+from safe_llm_finetune.datasets.base import Dataset
+from safe_llm_finetune.evaluation.base import Evaluator, SafetyEvaluator
+from safe_llm_finetune.fine_tuning.base import FineTuningMethod, ModelAdapter, TrainingConfig
 
 
 @dataclass

@@ -1,14 +1,18 @@
 """Evaluator running CodalBench Performance eval on specified model"""
-from typing import Optional
-from inspect_ai import Task, task
-from inspect_ai.dataset import hf_dataset, FieldSpec
-from inspect_ai.solver import generate, chain_of_thought
-from inspect_ai.scorer import model_graded_qa, mean, stderr
 import os
-import openai
-from safe_llm_finetune.evaluation.base import Evaluator
-from safe_llm_finetune.evaluation.prompt_templates import CODAL_PROMPT_TEMPLATES, CODAL_INSTRUCTION_TEMPLATE
+from typing import Optional
 
+from inspect_ai import Task, task
+from inspect_ai.dataset import FieldSpec, hf_dataset
+from inspect_ai.scorer import mean, model_graded_qa, stderr
+from inspect_ai.solver import chain_of_thought, generate
+import openai
+
+from safe_llm_finetune.evaluation.base import Evaluator
+from safe_llm_finetune.evaluation.prompt_templates import (
+    CODAL_INSTRUCTION_TEMPLATE,
+    CODAL_PROMPT_TEMPLATES,
+)
 
 HF = os.getenv("HF")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")

@@ -5,10 +5,12 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-from datasets import Dataset
+
 import torch
 from transformers import PreTrainedModel, PreTrainedTokenizer
-from safe_llm_finetune.datasets.base import DatasetProcessor
+
+from safe_llm_finetune.datasets.base import Dataset, DatasetProcessor
+
 
 @dataclass
 class CheckpointConfig:
@@ -60,7 +62,8 @@ class ModelAdapter(ABC):
         """
         pass
     
-    def load_quantized_model(self, )
+    def load_quantized_model(self):
+        pass
     
     @abstractmethod
     def generate(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer, 
