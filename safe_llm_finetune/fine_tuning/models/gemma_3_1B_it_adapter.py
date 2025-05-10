@@ -1,7 +1,7 @@
 from transformers import PreTrainedModel, PreTrainedTokenizer, AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 
-from safe_llm_finetune.fine_tuning.base import ModelAdapter, BnBQuantizationConfig 
+from safe_llm_finetune.fine_tuning.base import ModelAdapter 
 
 
 class GemmaAdapter(ModelAdapter):
@@ -37,20 +37,19 @@ class GemmaAdapter(ModelAdapter):
         )
         return tokenizer
     
-    def load_quantized_model(self, quantization_config: BnBQuantizationConfig) -> PreTrainedModel:
+    def load_quantized_model(self, quantization_config: BitsAndBytesConfig) -> PreTrainedModel:
         """ Load a model from HuggingFace in specified quantization
 
         Args:
-            quantization_config (BnBQuantizationConfig): config for quantization
+            quantization_config (BitsAndBytesConfig): config for quantization
 
         Returns:
             PreTrainedModel: model loaded in specified quantization
         """
-        bnb_config = quantization_config.to_bnb_config()
         
         model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
-            quantization_config=bnb_config,
+            quantization_config=quantization_config,
             device_map="auto",
             trust_remote_code=True
         )

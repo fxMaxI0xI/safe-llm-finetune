@@ -37,31 +37,6 @@ class TrainingConfig:
     checkpoint_config: Optional[CheckpointConfig] = None
     seed: int = 42
     optim: str = "adamw_torch"
-    
-@dataclass
-class BnBQuantizationConfig:
-    bits: Literal[4, 8] = 4  # Either 4-bit or 8-bit quantization
-    use_double_quant: bool = True  # Double quantization 
-    quant_type: Literal["nf4", "fp4"] = "nf4"  # nf4 (normalized float 4) or fp4
-    compute_dtype: torch.dtype = torch.float16  # Computation precision
-    
-    def __post_init__(self):
-        # Validation
-        if self.bits not in [4, 8]:
-            raise ValueError("BitsAndBytes only supports 4-bit or 8-bit quantization")
-        
-        if self.bits == 4 and self.quant_type not in ["nf4", "fp4"]:
-            raise ValueError("4-bit quantization only supports 'nf4' or 'fp4' quant_type")
-    
-    def to_bnb_config(self) -> BitsAndBytesConfig:
-        """Convert to BitsAndBytesConfig object for HuggingFace Transformers"""
-        return BitsAndBytesConfig(
-            load_in_4bit=(self.bits == 4),
-            load_in_8bit=(self.bits == 8),
-            bnb_4bit_use_double_quant=self.use_double_quant,
-            bnb_4bit_quant_type=self.quant_type,
-            bnb_4bit_compute_dtype=self.compute_dtype
-        )
 
 
 
@@ -94,7 +69,7 @@ class ModelAdapter(ABC):
     
     
     @abstractmethod
-    def load_quantized_model(self, quantization_config: BnBQuantizationConfig) -> PreTrainedModel:
+    def load_quantized_model(self, quantization_config: BitsAndBytesConfig) -> PreTrainedModel:
         """ Load a model from HuggingFace in specifiec quantization
 
         Args:
