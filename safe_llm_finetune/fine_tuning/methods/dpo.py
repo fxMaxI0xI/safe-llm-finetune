@@ -74,7 +74,6 @@ class DPOFineTuning(FineTuningMethod):
             hub_model_id= name,
             hub_strategy=config.checkpoint_config.hub_strategy,
             save_steps=config.checkpoint_config.save_steps,
-            save_steps=config.checkpoint_config.save_steps,
             save_total_limit=config.checkpoint_config.save_total_limit,
             save_strategy=config.checkpoint_config.save_strategy,
             seed=config.seed,

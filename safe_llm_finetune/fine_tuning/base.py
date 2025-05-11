@@ -16,10 +16,10 @@ from safe_llm_finetune.datasets.base import Dataset, DatasetProcessor
 class CheckpointConfig:
     """Configuration for checkpoint saving."""
     checkpoint_dir: Path
+    hub_model_id: str = None
     save_steps: int = 500
     save_total_limit: int = 5
     save_strategy: str = "steps"
-    hub_model_id: str
     hub_strategy : str ="checkpoint"
     push_to_hub : bool = True
 
