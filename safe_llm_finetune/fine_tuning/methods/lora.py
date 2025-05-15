@@ -1,5 +1,7 @@
 import os
+from dotenv import load_dotenv
 from typing import Optional
+import time
 
 from peft import LoraConfig, TaskType, get_peft_model
 from transformers import PreTrainedModel
@@ -9,6 +11,10 @@ from safe_llm_finetune.datasets.base import DatasetProcessor
 from safe_llm_finetune.fine_tuning.base import FineTuningMethod, TrainingConfig, ModelAdapter
 
 
+# Load environment variables from .env file
+load_dotenv()
+
+# Now you can access the HF variable
 HF = os.getenv("HF")
 
 class LoRAConfig:
@@ -78,7 +84,7 @@ class LoRAFineTuning(FineTuningMethod):
         """
         # 0) set training run name 
         identifier = self.lora_config.get_identifier()
-        name = f"{HF}/{self.model_adapter.get_name()}-{dataset_processor.get_name()}/LoRA-{identifier}"
+        name = f"{self.model_adapter.get_name()}-{dataset_processor.get_name()}-LoRA-{identifier}"
         
         # 1) get dataset
         train_data = dataset_processor.get_sft_dataset()
@@ -100,13 +106,14 @@ class LoRAFineTuning(FineTuningMethod):
             output_dir=str(config.checkpoint_config.checkpoint_dir),
             learning_rate=config.learning_rate,
             num_train_epochs=config.num_train_epochs,
+            gradient_accumulation_steps=config.gradient_accumulation_steps,
             per_device_train_batch_size=config.per_device_train_batch_size,
             per_device_eval_batch_size=config.per_device_eval_batch_size,
             warmup_steps=config.warmup_steps,
             weight_decay=config.weight_decay,
             fp16=config.fp16,
             push_to_hub=config.checkpoint_config.push_to_hub,
-            hub_model_id=name,
+            hub_model_id=f"{HF}/{name}",
             hub_strategy=config.checkpoint_config.hub_strategy,
             save_steps=config.checkpoint_config.save_steps,
             save_total_limit=config.checkpoint_config.save_total_limit,
@@ -115,9 +122,10 @@ class LoRAFineTuning(FineTuningMethod):
             logging_dir=f"{config.checkpoint_config.checkpoint_dir}/logs",
             logging_steps=10,
             remove_unused_columns=False,
-            gradient_accumulation_steps=1,
             optim=config.optim,
-            max_seq_length=self.lora_config.max_length
+            max_seq_length=self.lora_config.max_length,
+            report_to=config.report_to,
+            run_name=str(time.time())+ name
         )
         
         # 5) Initialize trainer

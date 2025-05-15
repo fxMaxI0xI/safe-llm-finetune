@@ -16,9 +16,10 @@ classifiers = [
     "License :: OSI Approved :: MIT License"
 ]
 dependencies = [
+    "bitendbytes",
     "inspect-ai>=0.3.94",
-    "inspect-evals",
     "ipython",
+    "ipywidgets",
     "jupyterlab",
     "loguru",
     "matplotlib",
@@ -38,6 +39,7 @@ dependencies = [
     "transformers>=4.51.3",
     "trl>=0.17.0",
     "typer",
+    "wandb"
 ]
 requires-python = "==3.13.3"
 

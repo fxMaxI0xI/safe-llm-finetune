@@ -17,10 +17,10 @@ class CheckpointConfig:
     """Configuration for checkpoint saving."""
     checkpoint_dir: Path
     hub_model_id: str = None
-    save_steps: int = 500
-    save_total_limit: int = 5
+    save_steps: int = 0.1
+    save_total_limit: int = None
     save_strategy: str = "steps"
-    hub_strategy : str ="checkpoint"
+    hub_strategy : str ="all_checkpoints"
     push_to_hub : bool = True
 
 
@@ -29,14 +29,17 @@ class TrainingConfig:
     """Configuration for fine-tuning."""
     learning_rate: float = 5e-5
     num_train_epochs: int = 3
-    per_device_train_batch_size: int = 8
-    per_device_eval_batch_size: int = 8
+    per_device_train_batch_size: int = 2
+    per_device_eval_batch_size: int = 4
     warmup_steps: int = 0
     weight_decay: float = 0.01
     fp16: bool = False
+    gradient_accumulation_steps=1
     checkpoint_config: Optional[CheckpointConfig] = None
     seed: int = 42
     optim: str = "adamw_torch"
+    report_to: str = "wandb"
+    gradient_checkpointing : bool = True
 
 
 
@@ -80,21 +83,21 @@ class ModelAdapter(ABC):
         """
         pass
     
-    @abstractmethod
-    def generate(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer, prompt: str, **kwargs) -> str:
-        """
-        Generate text using the model.
+    # @abstractmethod
+    # def generate(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer, prompt: str, **kwargs) -> str:
+    #     """
+    #     Generate text using the model.
         
-        Args:
-            model: Model to use for generation
-            tokenizer: Tokenizer to use for generation
-            prompt: Input prompt
-            **kwargs: Additional generation parameters
+    #     Args:
+    #         model: Model to use for generation
+    #         tokenizer: Tokenizer to use for generation
+    #         prompt: Input prompt
+    #         **kwargs: Additional generation parameters
             
-        Returns:
-            Generated text
-        """
-        pass
+    #     Returns:
+    #         Generated text
+    #     """
+    #     pass
     @abstractmethod
     def get_name(self) -> str :
         """

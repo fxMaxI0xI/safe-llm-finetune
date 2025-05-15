@@ -1,7 +1,8 @@
 import os
 from typing import Optional, Literal
-
+from dotenv import load_dotenv
 import torch
+import time
 from peft import LoraConfig, TaskType, get_peft_model
 from transformers import PreTrainedModel, BitsAndBytesConfig
 from trl import SFTConfig, SFTTrainer
@@ -9,7 +10,7 @@ from trl import SFTConfig, SFTTrainer
 from safe_llm_finetune.datasets.base import DatasetProcessor
 from safe_llm_finetune.fine_tuning.base import FineTuningMethod, TrainingConfig, ModelAdapter
 
-
+load_dotenv()
 HF = os.getenv("HF")
 
 class QLoRAConfig:
@@ -100,7 +101,7 @@ class QLoRAFineTuning(FineTuningMethod):
         """
         # 0) set training run name 
         identifier = self.qlora_config.get_identifier()
-        name = f"{HF}/{self.model_adapter.get_name()}-{dataset_processor.get_name()}/qLoRA-{identifier}"
+        name = f"{HF}/{self.model_adapter.get_name()}-{dataset_processor.get_name()}-qLoRA-{identifier}"
         
         # 1) get dataset
         train_data = dataset_processor.get_sft_dataset()
@@ -110,6 +111,9 @@ class QLoRAFineTuning(FineTuningMethod):
         model = self.model_adapter.load_quantized_model(quant_config)
         tokenizer = self.model_adapter.load_tokenizer()
         
+        if hasattr(model, "config") and hasattr(model.config, "use_cache"):
+            model.config.use_cache = False
+        
         # 3) Setup LoRA on the quantized model using PEFT's LoraConfig
         peft_config = self.qlora_config.to_peft_config()
         peft_model = get_peft_model(model, peft_config)
@@ -117,6 +121,8 @@ class QLoRAFineTuning(FineTuningMethod):
         # Log trainable parameters vs total parameters
         trainable_params, all_params = self._get_parameter_counts(peft_model)
         print(f"Trainable parameters: {trainable_params:,} ({trainable_params / all_params:.2%} of total)")
+        
+        gradient_checkpointing_kwargs = {"use_reentrant": False}
         
         # 4) Configure training arguments
         training_args = SFTConfig(
@@ -142,7 +148,10 @@ class QLoRAFineTuning(FineTuningMethod):
             gradient_accumulation_steps=1,
             gradient_checkpointing=True,  
             optim=config.optim,
+            gradient_checkpointing_kwargs=gradient_checkpointing_kwargs,
             max_seq_length=self.qlora_config.max_length,
+            report_to=config.report_to,
+            run_name=str(time.time())+ name
         )
         
         # 5) Initialize trainer

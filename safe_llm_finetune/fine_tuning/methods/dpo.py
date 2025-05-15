@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
-
+import time
 import torch
 from transformers import PreTrainedModel, PreTrainedTokenizer
 from trl import DPOConfig as TRLDPOConfig
@@ -11,7 +11,9 @@ from safe_llm_finetune.datasets.base import DatasetProcessor
 from safe_llm_finetune.fine_tuning.base import FineTuningMethod, TrainingConfig
 from safe_llm_finetune.fine_tuning.checkpoint import CheckpointManager
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
 HF = os.getenv("HF")
 
 @dataclass
@@ -81,6 +83,10 @@ class DPOFineTuning(FineTuningMethod):
             label_smoothing=self.dpo_config.label_smoothing,
             loss_type=self.dpo_config.loss_type,
             label_pad_token_id=self.dpo_config.label_pad_token_id,
+            report_to=config.report_to,
+            run_name=str(time.time())+ name,
+            gradient_accumulation_steps=2, 
+            gradient_checkpointing=config.gradient_checkpointing
         )
         
         # 5) Initialize DPO trainer
