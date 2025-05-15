@@ -78,7 +78,7 @@ class LoRAFineTuning(FineTuningMethod):
         """
         # 0) set training run name 
         identifier = self.lora_config.get_identifier()
-        name = f"{HF}/{self.model_adapter.get_name()}-{dataset_processor.get_name()}/LoRA-{identifier}"
+        name = f"{HF}/{self.model_adapter.get_name()}-{dataset_processor.get_name()}-LoRA-{identifier}"
         
         # 1) get dataset
         train_data = dataset_processor.get_sft_dataset()

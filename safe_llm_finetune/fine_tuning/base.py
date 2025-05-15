@@ -80,21 +80,7 @@ class ModelAdapter(ABC):
         """
         pass
     
-    @abstractmethod
-    def generate(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer, prompt: str, **kwargs) -> str:
-        """
-        Generate text using the model.
-        
-        Args:
-            model: Model to use for generation
-            tokenizer: Tokenizer to use for generation
-            prompt: Input prompt
-            **kwargs: Additional generation parameters
-            
-        Returns:
-            Generated text
-        """
-        pass
+    
     @abstractmethod
     def get_name(self) -> str :
         """
