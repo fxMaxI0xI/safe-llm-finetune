@@ -20,8 +20,8 @@ class GemmaAdapter(ModelAdapter):
         model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             device_map="auto",
-            trust_remote_code=True,
-            attn_implementation='eager'
+            attn_implementation='eager',
+            trust_remote_code=True
         )
         return model
     
@@ -52,8 +52,7 @@ class GemmaAdapter(ModelAdapter):
             self.model_name,
             quantization_config=quantization_config,
             device_map="auto",
-            trust_remote_code=True,
-            attn_implementation='eager'
+            trust_remote_code=True
         )
         return model
     
