@@ -10,3 +10,5 @@ class AirBench(Evaluator):
     def create_task(self):
         return air_bench.air_bench()
     
+    def get_name(self):
+        return "AirBench"

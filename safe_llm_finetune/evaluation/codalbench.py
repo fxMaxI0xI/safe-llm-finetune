@@ -20,8 +20,8 @@ openai.api_key = OPENAI_API_KEY
 
 
 class CodalBench(Evaluator):
-    def __init__(self, model_name, file_path, debug= False, preference: Optional[str] = None, judge_model = "openai/gpt-4o-mini"):
-        super().__init__(model_name, file_path, debug)
+    def __init__(self, debug= False, preference: Optional[str] = None, judge_model = "openai/gpt-4o-mini"):
+        super().__init__(debug)
         
         self.preference = preference
         self.judge_model = judge_model
@@ -41,6 +41,9 @@ class CodalBench(Evaluator):
         metadata=["preference"]  
     )
     )
+    
+    def get_name(self):
+        return "CodalBench"
             
         
     def available_preferences(self):

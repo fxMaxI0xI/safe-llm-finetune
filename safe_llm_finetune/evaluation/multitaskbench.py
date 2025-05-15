@@ -21,8 +21,8 @@ openai.api_key = OPENAI_API_KEY
 
 
 class MultiTaskBench(Evaluator):
-    def __init__(self, model_name, file_path, debug= False, judge_model ="openai/gpt-4o-mini"):
-        super().__init__(model_name, file_path, debug)
+    def __init__(self, debug= False, judge_model ="openai/gpt-4o-mini"):
+        super().__init__(debug)
         
         # downloading multitaskbench dataset, stored in data folder locally
         
@@ -50,7 +50,8 @@ class MultiTaskBench(Evaluator):
         )
         self.judge_model = judge_model
            
-       
+    def get_name(self):
+        return "MultiTaskBench"
        
     @task        
     def create_task(self):
@@ -68,7 +69,6 @@ class MultiTaskBench(Evaluator):
             scorer=detect_refusal,
             metrics=[
                 attack_success_rate(),
-                accuracy(to_float=get_refusal_value_to_float()),
             ]
         )      
         
