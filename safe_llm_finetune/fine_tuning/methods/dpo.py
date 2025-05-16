@@ -1,6 +1,9 @@
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+import os
 import time
+from typing import Any, Dict, Optional
+
+from dotenv import load_dotenv
 import torch
 from transformers import PreTrainedModel, PreTrainedTokenizer
 from trl import DPOConfig as TRLDPOConfig
@@ -10,8 +13,6 @@ from datasets import Dataset
 from safe_llm_finetune.datasets.base import DatasetProcessor
 from safe_llm_finetune.fine_tuning.base import FineTuningMethod, TrainingConfig
 from safe_llm_finetune.fine_tuning.checkpoint import CheckpointManager
-import os
-from dotenv import load_dotenv
 
 load_dotenv()
 HF = os.getenv("HF")

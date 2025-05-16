@@ -4,12 +4,11 @@ Abstract base classes for fine-tuning methods and models.
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, Literal
+from typing import Optional
 
-import torch
 from transformers import PreTrainedModel, PreTrainedTokenizer, BitsAndBytesConfig
 
-from safe_llm_finetune.datasets.base import Dataset, DatasetProcessor
+from safe_llm_finetune.datasets.base import DatasetProcessor
 
 
 @dataclass
@@ -40,7 +39,25 @@ class TrainingConfig:
     optim: str = "adamw_torch"
     report_to: str = "wandb"
     gradient_checkpointing : bool = True
+    max_seq_length: int = 1024
+    run_name: Optional[str] = None
 
+    def as_dict(self) -> dict:
+        return {
+            "learning_rate": self.learning_rate,
+            "num_train_epochs": self.num_train_epochs,
+            "per_device_train_batch_size": self.per_device_train_batch_size,
+            "per_device_eval_batch_size": self.per_device_eval_batch_size,
+            "warmup_steps": self.warmup_steps,
+            "weight_decay": self.weight_decay,
+            "fp16": self.fp16,
+            "gradient_accumulation_steps": self.gradient_accumulation_steps,
+            "optim": self.optim,
+            "report_to": self.report_to,
+            "gradient_checkpointing": self.gradient_checkpointing,
+            "max_seq_length": self.max_seq_length,
+            "seed": self.seed,
+        }
 
 
 
