@@ -39,7 +39,7 @@ class TrainingConfig:
     checkpoint_config: Optional[CheckpointConfig] = None
     seed: int = 42
     optim: str = "adamw_torch"
-    #report_to: str = "wandb"
+    report_to: str = "wandb"
     report_to: Optional[Union[str, list]] = None
     gradient_checkpointing : bool = True
     max_seq_length: int = 1024
