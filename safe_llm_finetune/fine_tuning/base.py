@@ -1,10 +1,12 @@
 """
 Abstract base classes for fine-tuning methods and models.
 """
+from typing import Optional, Union
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, List, Optional, Union, Literal
 
 from transformers import PreTrainedModel, PreTrainedTokenizer, BitsAndBytesConfig
 
@@ -37,7 +39,8 @@ class TrainingConfig:
     checkpoint_config: Optional[CheckpointConfig] = None
     seed: int = 42
     optim: str = "adamw_torch"
-    report_to: str = "wandb"
+    #report_to: str = "wandb"
+    report_to: Optional[Union[str, list]] = None
     gradient_checkpointing : bool = True
     max_seq_length: int = 1024
     run_name: Optional[str] = None

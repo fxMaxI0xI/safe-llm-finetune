@@ -17,6 +17,7 @@ class FullFineTuning(FineTuningMethod):
             **config.as_dict(),
             bf16=True,
             remove_unused_columns=False,
+            report_to=config.report_to,
         )
         trainer = SFTTrainer(model=model,
                              args=args,
