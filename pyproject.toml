@@ -16,7 +16,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License"
 ]
 dependencies = [
-    "bitsandbytes>=0.45.5; platform_system=="Linux"",
+    "bitsandbytes>=0.45.5; platform_system=="Linux",
     "inspect-ai>=0.3.94",
     "ipython",
     "ipywidgets",
