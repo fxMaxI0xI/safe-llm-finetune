@@ -22,6 +22,10 @@ def parse_args():
     p = argparse.ArgumentParser("Full SFT launcher")
     p.add_argument("--run_name",       type=str, default=None,
                    help="Name des Runs in W&B")
+    p.add_argument("--max_length", type=int, default=1024,
+                   help="Maximale Token-Länge pro Sequenz")
+    p.add_argument("--batch_size", type=int, default=2,
+                   help="Batch-Größe pro GPU")
     p.add_argument("--model_name",     type=str, required=True,
                    help="z. B. google/gemma-3-1B-it")
     p.add_argument("--out",            type=str, default="runs/tmp",
@@ -30,8 +34,6 @@ def parse_args():
                    help="Anzahl Trainingsepochen")
     p.add_argument("--sample_size",    type=int, default=1000,
                    help="Wie viele Beispiele laden (None=alle)")
-    p.add_argument("--max_length",     type=int, default=1024,
-                   help="Maximale Token-Länge pro Sequenz")
     return p.parse_args()
 
 
@@ -50,11 +52,14 @@ def main():
     # 3) TrainingConfig befüllen
     cfg = TrainingConfig(
         num_train_epochs=args.epochs,
+        per_device_train_batch_size=args.batch_size,
         max_seq_length=args.max_length,
         report_to="wandb",                     # aktiviert W&B-Logging
         run_name=args.run_name,                # Lauf-Name in W&B
         checkpoint_config=CheckpointConfig(
-            checkpoint_dir=pathlib.Path(args.out)
+            checkpoint_dir=pathlib.Path(args.out),
+            save_strategy="epoch",
+            save_total_limit=1,
         ),
     )
 

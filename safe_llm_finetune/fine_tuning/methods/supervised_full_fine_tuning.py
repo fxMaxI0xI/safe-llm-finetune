@@ -30,6 +30,8 @@ class FullFineTuning(FineTuningMethod):
             report_to=report_to,
             bf16=True,
             remove_unused_columns=False,
+            save_strategy="epoch",
+            save_total_limit=1,
             **sft_kwargs,
         )
 

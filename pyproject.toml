@@ -35,11 +35,13 @@ dependencies = [
     "ruff",
     "scikit-learn",
     "torch>=2.7.0",
+    "torchaudio>=2.7.0",
+    "torchvision>=0.22.0",
     "tqdm",
     "transformers>=4.51.3",
     "trl>=0.17.0",
     "typer",
-    "wandb"
+    "wandb",
 ]
 requires-python = ">=3.10"
 
