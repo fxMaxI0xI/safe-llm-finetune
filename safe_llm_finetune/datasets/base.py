@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple, Union
-
+import logging
 import torch
 from torch.utils.data import Dataset
 
@@ -25,9 +25,11 @@ class DatasetProcessor(ABC):
                         - None: use all examples
             seed: Random seed for reproducibility
         """
+        self.logger = logging.getLogger(__name__)
         self.dataset_path = dataset_path
         self.sample_size = sample_size
         self.loaded_data = None
+        
         
         # Validate sample_size
         if sample_size is not None:

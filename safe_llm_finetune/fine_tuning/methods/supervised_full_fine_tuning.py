@@ -1,4 +1,8 @@
 from trl import SFTConfig, SFTTrainer
+import os
+import logging
+from pathlib import Path
+from transformers import PreTrainedModel, AutoModel
 
 from safe_llm_finetune.fine_tuning.base import (
     FineTuningMethod,
@@ -9,7 +13,16 @@ from safe_llm_finetune.fine_tuning.base import (
 
 class FullFineTuning(FineTuningMethod):
     """Trainiert alle Gewichte (kein PEFT)."""
+    def __init__(self, model_adapter):
+        super().__init__(model_adapter, "full")
+        self.logger = logging.getLogger(__name__)
+        
+    def get_name(self):
+        return self.training_method
+        
     def train(self, dataset_processor, config: TrainingConfig):
+        self.logger.info("Starting full fine-tuning preparations...")
+        
         # 1) Datensatz holen
         ds = dataset_processor.get_sft_dataset()
 
@@ -36,15 +49,41 @@ class FullFineTuning(FineTuningMethod):
         )
 
         # 5) Trainer bauen und trainieren
+        self.logger.info("Initializing SFTTrainer for full fine-tuning.")
         trainer = SFTTrainer(
             model=model,
             args=args,
             train_dataset=ds,
         )
+        self.logger.info("Starting full fine-tuning training...")
         trainer.train()
+        self.logger.info("Finished full fine-tuning training. Saving model now...")
 
-        # 6) Modell & Tokenizer speichern
-        trainer.save_model(args.output_dir)
-        tokenizer.save_pretrained(args.output_dir)
+
+        # 6) Save with config metadata for traceability
+        save_dir = f"{config.checkpoint_config.checkpoint_dir}"
+        os.makedirs(save_dir, exist_ok=True)
+        
+                
+        # Save model
+        trainer.save_model(save_dir)
+        
+        # 7) push final model to hub
+        if config.checkpoint_config.push_to_hub:
+            trainer.push_to_hub()
+        
+        
+        # 8) save locally meta data  
+        self.save_training_metadata(config.checkpoint_config.checkpoint_dir, self.model_adapter.get_name())
+        self.logger.info("Model and metadata saved. Successfully trained model.")
+
 
         return model
+
+def load_model_from_checkpoint(self, checkpoint_path: str) -> PreTrainedModel:
+        checkpoint_path = Path(checkpoint_path)
+        if not checkpoint_path.exists():
+            raise ValueError(f"Checkpoint path does not exist: {checkpoint_path}")
+        
+        self.logger.info("Loading base model and checkpoint adapter.")
+        return  AutoModel.from_pretrained(checkpoint_path)

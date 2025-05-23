@@ -1,11 +1,12 @@
 import os
 import time
 from typing import Optional
-
+import logging
 from dotenv import load_dotenv
-from peft import LoraConfig, TaskType, get_peft_model
+from peft import LoraConfig, TaskType, PeftModel, get_peft_model
 from transformers import PreTrainedModel
 from trl import SFTConfig, SFTTrainer
+from pathlib import Path
 
 from safe_llm_finetune.datasets.base import DatasetProcessor
 from safe_llm_finetune.fine_tuning.base import FineTuningMethod, ModelAdapter, TrainingConfig
@@ -58,19 +59,26 @@ class LoRAConfig:
             return self.identifier
         
         # Create an identifier from parameters if not provided
-        return f"r{self.r}_a{self.alpha}_d{self.lora_dropout}"
+        return f"LoRA-r{self.r}_a{self.alpha}_d{self.lora_dropout}"
 
 
 class LoRAFineTuning(FineTuningMethod):
     """LoRA fine-tuning method implementation."""
     
     def __init__(self, model_adapter: ModelAdapter, lora_config: Optional[LoRAConfig] = None):
-        super().__init__(model_adapter)
+        super().__init__(model_adapter, "lora")
+        self.logger = logging.getLogger(__name__)
+
         self.lora_config = lora_config or LoRAConfig()
         if not self.lora_config.target_modules:
             self.lora_config.target_modules = model_adapter.get_lora_modules()
-        
-    def train(self, dataset_processor: DatasetProcessor, config: TrainingConfig) -> PreTrainedModel:
+            
+        self.training_method = self.lora_config.get_identifier()
+    
+    def get_name(self):
+        return self.training_method
+       
+    def train(self, dataset_processor: DatasetProcessor, config: TrainingConfig, base_path: Path) -> PreTrainedModel:
         """
         Train a model using LoRA for Supervised Fine-Tuning.
 
@@ -81,9 +89,10 @@ class LoRAFineTuning(FineTuningMethod):
         Returns:
             PreTrainedModel: fine-tuned model with LoRA for SFT
         """
+        self.logger.info("Starting LoRA fine-tuning preparations...")
+        
         # 0) set training run name 
-        identifier = self.lora_config.get_identifier()
-        name = f"{self.model_adapter.get_name()}-{dataset_processor.get_name()}-LoRA-{identifier}"
+        name = f"{self.model_adapter.get_name()}-{dataset_processor.get_name()}-{self.training_method}"
         
         # 1) get dataset
         train_data = dataset_processor.get_sft_dataset()
@@ -102,7 +111,7 @@ class LoRAFineTuning(FineTuningMethod):
         
         # 4) Configure training arguments
         training_args = SFTConfig(
-            output_dir=str(config.checkpoint_config.checkpoint_dir),
+            output_dir=config.checkpoint_config.checkpoint_dir.format(base= base_path),
             learning_rate=config.learning_rate,
             num_train_epochs=config.num_train_epochs,
             gradient_accumulation_steps=config.gradient_accumulation_steps,
@@ -128,6 +137,7 @@ class LoRAFineTuning(FineTuningMethod):
         )
         
         # 5) Initialize trainer
+        self.logger.info("Initializing SFTTrainer for LoRA fine-tuning.")
         trainer = SFTTrainer(
             model=peft_model,
             args=training_args,
@@ -136,10 +146,12 @@ class LoRAFineTuning(FineTuningMethod):
         )
         
         # 6) Train the model
+        self.logger.info("Starting LoRA fine-tuning training...")
         trainer.train()
+        self.logger.info("Finished qLoRA fine-tuning training. Saving model now...")
         
         # 7) Save with config metadata for traceability
-        save_dir = f"{config.checkpoint_config.checkpoint_dir}/{identifier}"
+        save_dir = f"{base_path}/{config.checkpoint_config.checkpoint_dir}"
         os.makedirs(save_dir, exist_ok=True)
         
         # Save LoRA config for reference
@@ -153,6 +165,11 @@ class LoRAFineTuning(FineTuningMethod):
         # 8) If pushed to hub, add metadata
         if config.checkpoint_config.push_to_hub:
             trainer.push_to_hub()
+          
+        # 9) save locally meta data  
+        self.save_training_metadata(config.checkpoint_config.checkpoint_dir, self.model_adapter.get_name())
+        
+        self.logger.info("Model and metadata saved. Successfully trained model.")
         
         return peft_model
     
@@ -161,3 +178,15 @@ class LoRAFineTuning(FineTuningMethod):
         trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
         all_params = sum(p.numel() for p in model.parameters())
         return trainable_params, all_params
+    
+    def load_model_from_checkpoint(self, checkpoint_path: str) -> PreTrainedModel:
+        
+        checkpoint_path = Path(checkpoint_path)
+        if not checkpoint_path.exists():
+            raise ValueError(f"Checkpoint path does not exist: {checkpoint_path}")
+        
+        self.logger.info("Loading base model and checkpoint adapter.")
+        base_model = self.model_adapter.load_model()
+        model = PeftModel.from_pretrained(base_model, checkpoint_path)
+        return model.merge_and_unload()
+    

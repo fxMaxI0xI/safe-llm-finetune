@@ -8,6 +8,7 @@ from inspect_ai.model import get_model
 from inspect_ai import Task
 from inspect_ai import eval as inspect_eval
 from inspect_ai.log import EvalLog
+from transformers import PreTrainedModel
 
 HF = os.getenv("HF")
 
@@ -37,11 +38,11 @@ class Evaluator(ABC):
         """
         pass
 
-    def runEval(self, model_name: str, checkpoint_dir: str ,file_path: str = "./evallogs") -> EvalLog:
+    def run_eval(self, model_path: str ,base_path: str) -> EvalLog:
         """runs inpects inate eval() function
         
         Args:
-            model_name (str): name of model to evaluate
+            model (PreTrainedModel): loaded local model
             checkpoint_dir (str): Path to the checkpoint directory
             file_path (str): Where to store eval logs
 
@@ -49,16 +50,12 @@ class Evaluator(ABC):
             EvalLog: returns log of evaluation from eval() call
         """
         task = self.create_task()
-        if self.debug:
-            results = inspect_eval(tasks=task, model= "openai/gpt-4o-mini", log_dir= file_path, limit=10)
-        else:
-
-            print(model_name, checkpoint_dir)
-            checkpoint_path = os.path.join(model_name, checkpoint_dir)
-            print(checkpoint_path)
         
-            model = get_model(model="hf/"+model_name, device= "cuda:0", from_tf=True, subfolder= checkpoint_dir)
+        log_file_path = f"{base_path}/eval_logs"
+        if self.debug:
+            results = inspect_eval(tasks=task, model= "openai/gpt-4o-mini", log_dir= log_file_path, limit=10)
+        else:
             
-            results = inspect_eval(tasks=task, model=model, log_dir=file_path + "/eval_log")
+            results = inspect_eval(tasks=task, model="hf/local", model_args=dict(model_path=model_path), log_dir=log_file_path)
         
         return results

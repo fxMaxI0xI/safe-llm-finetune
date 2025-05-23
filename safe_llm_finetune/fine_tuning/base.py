@@ -8,15 +8,19 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union, Literal
 
-from transformers import PreTrainedModel, PreTrainedTokenizer, BitsAndBytesConfig
-
+from transformers import PreTrainedModel, PreTrainedTokenizer, BitsAndBytesConfig, AutoModelForCausalLM
+from peft import PeftConfig, PeftModel
+import logging
 from safe_llm_finetune.datasets.base import DatasetProcessor
+import json
 
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class CheckpointConfig:
     """Configuration for checkpoint saving."""
-    checkpoint_dir: Path
+    checkpoint_dir: str = "{base}/checkpoints"
     hub_model_id: str = None
     save_steps: int = 0.1
     save_total_limit: int = None
@@ -69,6 +73,7 @@ class ModelAdapter(ABC):
     
     def __init__(self, model_name):
        self.model_name = model_name
+       self.logger = logging.getLogger(__name__)
     
     @abstractmethod
     def load_model(self) -> PreTrainedModel:
@@ -103,21 +108,6 @@ class ModelAdapter(ABC):
         """
         pass
     
-    # @abstractmethod
-    # def generate(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer, prompt: str, **kwargs) -> str:
-    #     """
-    #     Generate text using the model.
-        
-    #     Args:
-    #         model: Model to use for generation
-    #         tokenizer: Tokenizer to use for generation
-    #         prompt: Input prompt
-    #         **kwargs: Additional generation parameters
-            
-    #     Returns:
-    #         Generated text
-    #     """
-    #     pass
     @abstractmethod
     def get_name(self) -> str :
         """
@@ -150,35 +140,82 @@ class ModelAdapter(ABC):
         """
         pass
     
-
+    @abstractmethod
+    def load_model_from_checkpoint(self, checkpoint_path: str) -> PreTrainedModel:
+        """
+        Load a model from a checkpoint, handling different fine-tuning methods.
+        
+        Args:
+            checkpoint_path: Path to the checkpoint directory
+            
+        Returns:
+            Loaded model from checkpoint
+        """
+        pass
 
 class FineTuningMethod(ABC):
     """Abstract base class for fine-tuning methods."""
     
-    def __init__(self, model_adapter: ModelAdapter):
+    def __init__(self, model_adapter: ModelAdapter, training_method: str):
         """
         Initialize fine-tuning method.
         
         Args:
             model_adapter: Model adapter to use
+            training_method: which method the adapter is for
         """
         self.model_adapter = model_adapter
+        self.training_method = training_method
+    
+    @abstractmethod
+    def get_name(self) -> str:
+        """Return name of training method
+        """
+        pass
     
     
     @abstractmethod
-    def train(self, dataset_processor: DatasetProcessor, config: TrainingConfig) -> PreTrainedModel:
-        """
-        Fine-tune the model.
-        
+    def train(self, dataset_processor: DatasetProcessor, config: TrainingConfig, base_path: Path) -> PreTrainedModel:
+        """Fine tune the model
+
         Args:
-            model: Model to fine-tune
-            tokenizer: Tokenizer to use
-            dataset: Dataset processor to use for fine-tuning
-            config: Training configuration
-            
+            dataset_processor (DatasetProcessor): dataset to be fine tuned on, wrapped into a DataProcessor
+            config (TrainingConfig): TrainingConfig for fine-tuning
+            base_path (Path): local base path where checkpoints, results etc. are stored.
+
         Returns:
-            Fine-tuned model
+            PreTrainedModel: final fine-tuned model
         """
         pass
+    
+    def save_training_metadata(self, checkpoint_path: str, model_name: str, **kwargs):
+        """
+        Save metadata about the training method used.
+        
+        Args:
+            checkpoint_path: Path to checkpoint
+            training_method: Name of training method
+            **kwargs: Additional metadata to save
+        """
+        metadata = {
+            "training_method": self.training_method,
+            "base_model": model_name,
+            **kwargs
+        }
+        
+        metadata_path = Path(checkpoint_path) / "training_metadata.json"
+        with open(metadata_path, 'w') as f:
+            json.dump(metadata, f, indent=2)
+            
+    @abstractmethod
+    def load_model_from_checkpoint(self, checkpoint_path: str) -> PreTrainedModel:
+        """loads a model (peft/full) from specified checkpoint
+
+        Args:
+            checkpoint_path (str): path to exact checkpoint
+
+        Returns:
+            PreTrainedModel: model from checkpoint, if peft, return merged model
+        """
     
     

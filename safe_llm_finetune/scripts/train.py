@@ -2,6 +2,7 @@
 import argparse
 import os
 import pathlib
+import logging
 
 # Um die Tokenizer-Warnung loszuwerden
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -14,7 +15,8 @@ from safe_llm_finetune.fine_tuning.base import (
     TrainingConfig,
 )
 from safe_llm_finetune.fine_tuning.methods.supervised_full_fine_tuning import FullFineTuning
-from safe_llm_finetune.fine_tuning.models.gemma_3_1B_it_adapter import GemmaAdapter
+from safe_llm_finetune.fine_tuning.models.gemma_3_1B_it_adapter import Gemma_3_1B
+from safe_llm_finetune.utils.logging import setup_logging
 
 
 def parse_args():
@@ -45,6 +47,11 @@ def parse_args():
 
 
 def main():
+    setup_logging()
+    
+    logger = logging.getLogger(__name__)
+    logger.info("Starting model training pipeline")
+    
     args = parse_args()
 
     # 1) Datensatz vorbereiten
@@ -52,7 +59,7 @@ def main():
 
     # 2) Modell-Adapter wählen
     if args.model_name.startswith("google/gemma"):
-        ma = GemmaAdapter(args.model_name)
+        ma = Gemma_3_1B(args.model_name)
     else:
         ma = ModelAdapter(args.model_name)
 
@@ -74,7 +81,8 @@ def main():
 
     # 4) Voll-Fine-Tuning starten
     FullFineTuning(ma).train(ds, cfg)
-
+    
+    logger.info("Pipeline completed successfully")
 
 if __name__ == "__main__":
     main()
