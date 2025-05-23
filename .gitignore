@@ -1,5 +1,8 @@
 # Data
 /data/
+/checkpoints
+/eval_logs
+/models/
 
 # wandb
 wandb

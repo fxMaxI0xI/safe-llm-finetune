@@ -140,18 +140,6 @@ class ModelAdapter(ABC):
         """
         pass
     
-    @abstractmethod
-    def load_model_from_checkpoint(self, checkpoint_path: str) -> PreTrainedModel:
-        """
-        Load a model from a checkpoint, handling different fine-tuning methods.
-        
-        Args:
-            checkpoint_path: Path to the checkpoint directory
-            
-        Returns:
-            Loaded model from checkpoint
-        """
-        pass
 
 class FineTuningMethod(ABC):
     """Abstract base class for fine-tuning methods."""
