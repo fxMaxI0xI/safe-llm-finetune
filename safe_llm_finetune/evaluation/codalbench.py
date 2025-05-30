@@ -2,12 +2,11 @@
 import os
 from typing import Optional
 
-from inspect_ai import Task, task, eval_set
+from inspect_ai import Task, eval_set, task
 from inspect_ai.dataset import FieldSpec, hf_dataset
+from inspect_ai.log import EvalLog
 from inspect_ai.scorer import mean, model_graded_qa, stderr
 from inspect_ai.solver import chain_of_thought, generate
-from inspect_ai.log import EvalLog
-
 import openai
 
 from safe_llm_finetune.evaluation.base import Evaluator
