@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import argparse
+import logging
 import os
 import pathlib
-import logging
 
 # Um die Tokenizer-Warnung loszuwerden
 os.environ["TOKENIZERS_PARALLELISM"] = "false"

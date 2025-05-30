@@ -2,12 +2,11 @@ import logging
 import os
 from pathlib import Path
 
-from transformers import AutoModel, PreTrainedModel
+from transformers import AutoModelForCausalLM, PreTrainedModel
 from trl import SFTConfig, SFTTrainer
 
 from safe_llm_finetune.fine_tuning.base import (
     FineTuningMethod,
-    ModelAdapter,
     TrainingConfig,
 )
 
@@ -81,10 +80,20 @@ class FullFineTuning(FineTuningMethod):
 
         return model
 
-def load_model_from_checkpoint(self, checkpoint_path: str) -> PreTrainedModel:
+    def load_model_from_checkpoint(self, checkpoint_path: str) -> PreTrainedModel:
         checkpoint_path = Path(checkpoint_path)
         if not checkpoint_path.exists():
             raise ValueError(f"Checkpoint path does not exist: {checkpoint_path}")
-        
-        self.logger.info("Loading base model and checkpoint adapter.")
-        return  AutoModel.from_pretrained(checkpoint_path)
+
+        self.logger.info("Lade Modell aus Checkpoint-Verzeichnis %s", checkpoint_path)
+        # wenn du PEFT benutzt:
+        try:
+            from peft import PeftConfig, PeftModel
+            peft_cfg = PeftConfig.from_pretrained(checkpoint_path)
+            base = AutoModelForCausalLM.from_pretrained(peft_cfg.base_model_name_or_path)
+            peft = PeftModel.from_pretrained(base, checkpoint_path)
+            return peft.merge_and_unload()
+        except ImportError:
+            # reines HF-Model
+            from transformers import AutoModelForCausalLM
+            return AutoModelForCausalLM.from_pretrained(checkpoint_path)
