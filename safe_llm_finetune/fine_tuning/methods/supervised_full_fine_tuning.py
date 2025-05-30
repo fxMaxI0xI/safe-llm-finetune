@@ -16,7 +16,7 @@ class FullFineTuning(FineTuningMethod):
         # 2) Modell & Tokenizer laden
         model = self.model_adapter.load_model()
         tokenizer = self.model_adapter.load_tokenizer()
-        model.gradient_checkpointing_enable()
+        #model.gradient_checkpointing_enable() #disabled for more GPU Ram usage
 
         # 3) Alle Trainings-Parameter extrahieren
         sft_kwargs = config.as_dict().copy()
