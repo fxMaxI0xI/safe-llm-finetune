@@ -108,15 +108,22 @@ def evaluate_model_and_checkpoint(
                 logger.info(f"Running {evaluator.get_name()} on {model_name}")
         
                 log = evaluator.run_eval(model_path=model_path, tokenizer_path=tokenizer_path, base_path=base_path)
-        
-                if log.status == "success":
+                if isinstance(log, EvalLog):
+                    success = log.status
+                    logs = [log]
+                else:
+                    success, logs = log
+                
+                if success == "success":
+                    for log in logs:
                     # Extract metrics
-                    for metric_key, metric_object in log.results.metrics.items():
+                        for metric_key, metric_object in log.results.metrics.items():
+                            
+                            metric_name = f"{evaluator.get_name()}_{metric_key}_{metric_object.name}"
+                            
+                            results[metric_name] = metric_object.value
                         
-                        metric_name = f"{evaluator.get_name()}_{metric_key}_{metric_object.name}"
-                        results[metric_name] = metric_object.value
-                    
-                    logger.info(f"Successfully evaluated {evaluator.get_name()}")
+                        logger.info(f"Successfully evaluated {evaluator.get_name()}")
                     
                 else:
                     logger.error(f"Evaluation failed with status: {log.status}")
@@ -151,23 +158,23 @@ def evaluate(evals: List[Evaluator], fine_tuner: FineTuningMethod, model: PreTra
     
     results_list = []
     
-    # # 1) Evaluate the final model
-    # logger.info("Evaluating final model...")
-    # final_results = evaluate_model_and_checkpoint(
-    #     evals=evals,
-    #     fine_tuner= fine_tuner,
-    #     model=model,
-    #     model_name=model_name,
-    #     base_path=base_path,
-    #     checkpoint_info=None
-    # )
-    # results_list.append(final_results)
+    # 1) Evaluate the final model
+    logger.info("Evaluating final model...")
+    final_results = evaluate_model_and_checkpoint(
+        evals=evals,
+        fine_tuner= fine_tuner,
+        model=model,
+        model_name=model_name,
+        base_path=base_path,
+        checkpoint_info=None
+    )
+    results_list.append(final_results)
     
-    # # Save intermediate results
-    # pd.DataFrame([final_results]).to_csv(output_file, index=False)
-    # logger.info(f"Saved final model results to {output_file}")
+    # Save intermediate results
+    pd.DataFrame([final_results]).to_csv(output_file, index=False)
+    logger.info(f"Saved final model results to {output_file}")
     
-    # 2) Discover and evaluate checkpoints
+    #2) Discover and evaluate checkpoints
     checkpoints = discover_checkpoints(f"{base_path}/checkpoints")
     
     for i, checkpoint_info in enumerate(checkpoints):
