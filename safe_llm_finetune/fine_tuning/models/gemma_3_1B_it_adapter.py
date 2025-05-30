@@ -1,15 +1,17 @@
 from transformers import PreTrainedModel, PreTrainedTokenizer, AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-
+import logging
 
 from safe_llm_finetune.fine_tuning.base import ModelAdapter 
 
 
-class GemmaAdapter(ModelAdapter):
+class Gemma_3_1B(ModelAdapter):
     """Adapter for google/gemma-3-1B-it model."""
     
     def __init__(self, model_name="google/gemma-3-1B-it"):
         super().__init__(model_name)
-    
+        self.logger = logging.getLogger(__name__) 
+        self.logger.info("Initializing GemmaAdapter")
+        
     def load_model(self) -> PreTrainedModel:
         """
         Load the Gemma model from HuggingFace.
@@ -17,12 +19,15 @@ class GemmaAdapter(ModelAdapter):
         Returns:
             Loaded model
         """
+        self.logger.info("Loading Gemma 3 1B Model from hf")
         model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             device_map="auto",
             attn_implementation='eager',
             trust_remote_code=True
         )
+        self.logger.info("Finished Loading Gemma 3 1B Model from hf")
+
         return model
     
     def load_tokenizer(self) -> PreTrainedTokenizer:
@@ -32,10 +37,13 @@ class GemmaAdapter(ModelAdapter):
         Returns:
             Loaded tokenizer
         """
+        self.logger.info("Loading Gemma 3 1B Tokenizer from hf")
         tokenizer = AutoTokenizer.from_pretrained(
             self.model_name,
             trust_remote_code=True
         )
+        self.logger.info("Finished Loading Gemma 3 1B Tokenizer from hf")
+
         return tokenizer
     
     def load_quantized_model(self, quantization_config: BitsAndBytesConfig) -> PreTrainedModel:
@@ -47,13 +55,15 @@ class GemmaAdapter(ModelAdapter):
         Returns:
             PreTrainedModel: model loaded in specified quantization
         """
-        
+        self.logger.info("Loading Gemma 3 1B Model in quantization from hf")
         model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             quantization_config=quantization_config,
             device_map="auto",
             trust_remote_code=True
         )
+        self.logger.info("Finished loading Gemma 3 1B Model in quantization from hf")
+
         return model
     
     

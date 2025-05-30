@@ -1,10 +1,11 @@
 import os
 import time
 from typing import Literal, Optional
-
+import logging
 from dotenv import load_dotenv
-from peft import LoraConfig, TaskType, get_peft_model
+from peft import LoraConfig, TaskType, get_peft_model, PeftModel
 import torch
+from pathlib import Path
 from transformers import BitsAndBytesConfig, PreTrainedModel
 from trl import SFTConfig, SFTTrainer
 
@@ -84,12 +85,20 @@ class QLoRAFineTuning(FineTuningMethod):
     """qLoRA fine-tuning method implementation."""
     
     def __init__(self, model_adapter: ModelAdapter, qlora_config: Optional[QLoRAConfig] = None):
-        super().__init__(model_adapter)
+        super().__init__(model_adapter, "qlora")
         self.qlora_config = qlora_config or QLoRAConfig()
+        self.logger = logging.getLogger(__name__)
+
         if not self.qlora_config.target_modules:
             self.qlora_config.target_modules = model_adapter.get_qlora_modules()
         
-    def train(self, dataset_processor: DatasetProcessor, config: TrainingConfig) -> PreTrainedModel:
+        self.training_method = self.qlora_config.get_identifier()
+
+            
+    def get_name(self):
+        return self.training_method
+        
+    def train(self, dataset_processor: DatasetProcessor, config: TrainingConfig, base_path: Path) -> PreTrainedModel:
         """
         Train a model using qLoRA for Supervised Fine-Tuning.
 
@@ -100,9 +109,11 @@ class QLoRAFineTuning(FineTuningMethod):
         Returns:
             PreTrainedModel: fine-tuned model with qLoRA for SFT
         """
+        self.logger.info("Starting qLoRA fine-tuning preparations...")
+
         # 0) set training run name 
         identifier = self.qlora_config.get_identifier()
-        name = f"{HF}/{self.model_adapter.get_name()}-{dataset_processor.get_name()}-qLoRA-{identifier}"
+        name = f"{self.model_adapter.get_name()}-{dataset_processor.get_name()}-{self.training_method}"
         
         # 1) get dataset
         train_data = dataset_processor.get_sft_dataset()
@@ -127,7 +138,7 @@ class QLoRAFineTuning(FineTuningMethod):
         
         # 4) Configure training arguments
         training_args = SFTConfig(
-            output_dir=str(config.checkpoint_config.checkpoint_dir),
+            output_dir=config.checkpoint_config.checkpoint_dir.format(base= base_path),
             learning_rate=config.learning_rate,
             num_train_epochs=config.num_train_epochs,
             per_device_train_batch_size=config.per_device_train_batch_size,
@@ -137,7 +148,7 @@ class QLoRAFineTuning(FineTuningMethod):
             fp16=config.fp16,
             bf16=True, 
             push_to_hub=config.checkpoint_config.push_to_hub,
-            hub_model_id=name,
+            hub_model_id=f"{HF}/{name}",
             hub_strategy=config.checkpoint_config.hub_strategy,
             save_steps=config.checkpoint_config.save_steps,
             save_total_limit=config.checkpoint_config.save_total_limit,
@@ -156,6 +167,7 @@ class QLoRAFineTuning(FineTuningMethod):
         )
         
         # 5) Initialize trainer
+        self.logger.info("Initializing SFTTrainer for qLoRA fine-tuning.")
         trainer = SFTTrainer(
             model=peft_model,
             args=training_args,
@@ -164,10 +176,12 @@ class QLoRAFineTuning(FineTuningMethod):
         )
         
         # 6) Train the model
+        self.logger.info("Starting qLoRA fine-tuning training...")
         trainer.train()
+        self.logger.info("Finished qLoRA fine-tuning training. Saving model now...")
         
         # 7) Save with config metadata for traceability
-        save_dir = f"{config.checkpoint_config.checkpoint_dir}/{identifier}"
+        save_dir = f"{base_path}/{config.checkpoint_config.checkpoint_dir}"
         os.makedirs(save_dir, exist_ok=True)
         
         # Save qLoRA config for reference
@@ -178,9 +192,15 @@ class QLoRAFineTuning(FineTuningMethod):
         # Save model
         trainer.save_model(save_dir)
         
-        # 8) If pushed to hub, add metadata
+        # 8) push final model to hub
         if config.checkpoint_config.push_to_hub:
             trainer.push_to_hub()
+        
+        
+        # 9) save locally meta data  
+        self.save_training_metadata(config.checkpoint_config.checkpoint_dir, self.model_adapter.get_name())
+        
+        self.logger.info("Model and metadata saved. Successfully trained model.")
         
         return peft_model
     
@@ -189,3 +209,17 @@ class QLoRAFineTuning(FineTuningMethod):
         trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
         all_params = sum(p.numel() for p in model.parameters())
         return trainable_params, all_params
+    
+    def load_model_from_checkpoint(self, checkpoint_path: str) -> PreTrainedModel:
+        
+        checkpoint_path = Path(checkpoint_path)
+        
+        if not checkpoint_path.exists():
+            raise ValueError(f"Checkpoint path does not exist: {checkpoint_path}")
+        
+        self.logger.info("Loading base model and checkpoint adapter.")
+        quant_config = self.qlora_config.to_quant_config()
+        base_model = self.model_adapter.load_quantized_model(quant_config)
+        model = PeftModel.from_pretrained(base_model, checkpoint_path)
+        return model.merge_and_unload()
+        
