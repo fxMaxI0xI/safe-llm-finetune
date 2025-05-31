@@ -84,7 +84,7 @@ def evaluate_model_and_checkpoint(
         checkpoint_path, step_number = checkpoint_info
         try:
             # Load model from checkpoint using model adapter
-            model = fine_tuner.load_model_from_checkpoint(f"{base_path}/{checkpoint_path}")
+            model = fine_tuner.load_model_from_checkpoint(f"{checkpoint_path}")
             logger.info(f"Loaded model from checkpoint: {checkpoint_path}")
         except Exception as e:
             logger.error(f"Failed to load model from checkpoint {checkpoint_path}: {str(e)}")
@@ -107,17 +107,20 @@ def evaluate_model_and_checkpoint(
             try:
                 logger.info(f"Running {evaluator.get_name()} on {model_name}")
         
-                log = evaluator.run_eval(model_path=model_path, tokenizer_path=tokenizer_path, base_path=base_path)
-                if isinstance(log, EvalLog):
-                    success = log.status
-                    logs = [log]
-                else:
-                    success, logs = log
+                eval_log = evaluator.run_eval(model_path=model_path, tokenizer_path=tokenizer_path, base_path=base_path)
                 
-                if success == "success":
+                if isinstance(eval_log, tuple):
+                    logger.info(f"Received tuple from {evaluator.get_name()} on {model_name}")
+                    success, logs = eval_log
+                else:
+                    logger.info(f"Received single EvalLog from {evaluator.get_name()} on {model_name}")
+                    success = eval_log[0].status == "success"
+                    logs = eval_log
+                
+                if success:
                     for log in logs:
                     # Extract metrics
-                        for metric_key, metric_object in log.results.metrics.items():
+                        for metric_key, metric_object in log.results.scores[0].metrics.items():
                             
                             metric_name = f"{evaluator.get_name()}_{metric_key}_{metric_object.name}"
                             
@@ -126,7 +129,7 @@ def evaluate_model_and_checkpoint(
                         logger.info(f"Successfully evaluated {evaluator.get_name()}")
                     
                 else:
-                    logger.error(f"Evaluation failed with status: {log.status}")
+                    logger.error(f"Evaluation failed with no success")
                     
             except Exception as e:
                 logger.error(f"Error running evaluation {evaluator.get_name()}: {str(e)}")

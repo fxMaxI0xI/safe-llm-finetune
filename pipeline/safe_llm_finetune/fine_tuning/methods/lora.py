@@ -127,7 +127,7 @@ class LoRAFineTuning(FineTuningMethod):
             save_total_limit=config.checkpoint_config.save_total_limit,
             save_strategy=config.checkpoint_config.save_strategy,
             seed=config.seed,
-            logging_dir=f"{config.checkpoint_config.checkpoint_dir}/logs",
+            logging_dir=f"{config.checkpoint_config.checkpoint_dir.format(base= base_path)}/logs",
             logging_steps=10,
             remove_unused_columns=False,
             optim=config.optim,
@@ -148,10 +148,10 @@ class LoRAFineTuning(FineTuningMethod):
         # 6) Train the model
         self.logger.info("Starting LoRA fine-tuning training...")
         trainer.train()
-        self.logger.info("Finished qLoRA fine-tuning training. Saving model now...")
+        self.logger.info("Finished LoRA fine-tuning training. Saving model now...")
         
         # 7) Save with config metadata for traceability
-        save_dir = f"{base_path}/{config.checkpoint_config.checkpoint_dir}"
+        save_dir = f"{config.checkpoint_config.checkpoint_dir.format(base= base_path)}"
         os.makedirs(save_dir, exist_ok=True)
         
         # Save LoRA config for reference
@@ -167,7 +167,7 @@ class LoRAFineTuning(FineTuningMethod):
             trainer.push_to_hub()
           
         # 9) save locally meta data  
-        self.save_training_metadata(config.checkpoint_config.checkpoint_dir, self.model_adapter.get_name())
+        self.save_training_metadata(config.checkpoint_config.checkpoint_dir.format(base= base_path), self.model_adapter.get_name())
         
         self.logger.info("Model and metadata saved. Successfully trained model.")
         
