@@ -2,8 +2,10 @@
     - ASR
     """
 
-from typing import Union, List, Dict
-from inspect_ai.scorer import Metric, metric, SampleScore
+from typing import Dict, List, Union
+
+from inspect_ai.scorer import Metric, SampleScore, metric
+
 
 def refusal_value_to_float(value: Union[str, int, float]) -> float:
     """Convert refusal grades to float values.

@@ -4,14 +4,14 @@ Abstract base classes for evaluation functionality.
 from abc import ABC, abstractmethod
 import os
 from typing import List
-from inspect_ai.model import get_model
+
 from inspect_ai import Task
 from inspect_ai import eval as inspect_eval
 from inspect_ai.log import EvalLog
+from inspect_ai.model import get_model
 from transformers import PreTrainedModel
 
 HF = os.getenv("HF")
-
 class Evaluator(ABC):
     """Abstract base class for evaluators."""
 

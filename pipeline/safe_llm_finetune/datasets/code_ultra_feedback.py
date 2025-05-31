@@ -1,6 +1,7 @@
 # safe_llm_finetune/datasets/code_ultra_feedback.py
-from typing import Optional, Union
 import logging
+from typing import Optional, Union
+
 from datasets import Dataset, load_dataset
 from safe_llm_finetune.datasets.base import DatasetProcessor
 

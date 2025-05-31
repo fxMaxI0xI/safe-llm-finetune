@@ -1,19 +1,21 @@
 """
 Evaluation script for fine-tuned models with checkpoint support.
 """
-import os
-import re
-import time
+from datetime import datetime
 import logging
-import tempfile
+import os
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Tuple
-import pandas as pd
+import re
+import tempfile
+import time
+from typing import Any, Dict, List, Optional, Tuple
+
 from inspect_ai.log import EvalLog
+import pandas as pd
+from transformers import PreTrainedModel
+
 from safe_llm_finetune.evaluation.base import Evaluator
 from safe_llm_finetune.fine_tuning.base import FineTuningMethod
-from transformers import PreTrainedModel
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 

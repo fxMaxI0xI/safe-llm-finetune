@@ -1,7 +1,14 @@
-from transformers import PreTrainedModel, PreTrainedTokenizer, AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 import logging
 
-from safe_llm_finetune.fine_tuning.base import ModelAdapter 
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    BitsAndBytesConfig,
+    PreTrainedModel,
+    PreTrainedTokenizer,
+)
+
+from safe_llm_finetune.fine_tuning.base import ModelAdapter
 
 
 class Gemma_3_1B(ModelAdapter):

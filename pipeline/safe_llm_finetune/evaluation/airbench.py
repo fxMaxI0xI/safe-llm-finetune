@@ -1,7 +1,9 @@
 """Evaluator running AIR Bench Safety eval on specified model"""
 
-from inspect_evals import air_bench
 import os
+
+from inspect_evals import air_bench
+
 from safe_llm_finetune.evaluation.base import Evaluator
 
 
