@@ -45,6 +45,8 @@ class FullFineTuning(FineTuningMethod):
             remove_unused_columns=False,
             save_strategy="epoch",
             save_total_limit=1,
+            logging_strategy="steps",
+            logging_steps=50, # für wandb graphen 
             **sft_kwargs,
         )
 
