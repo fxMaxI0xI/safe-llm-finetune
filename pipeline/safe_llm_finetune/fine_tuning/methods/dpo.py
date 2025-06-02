@@ -90,7 +90,7 @@ class DPOFineTuning(FineTuningMethod):
             label_smoothing=self.dpo_config.label_smoothing,
             loss_type=self.dpo_config.loss_type,
             label_pad_token_id=self.dpo_config.label_pad_token_id,
-            logging_dir=f"{config.checkpoint_config.checkpoint_dir}/logs",
+            logging_dir=f"{config.checkpoint_config.checkpoint_dir.format(base= base_path)}/logs",
             logging_steps=10,
             report_to=config.report_to,
             run_name=str(time.time())+ name,
@@ -114,7 +114,7 @@ class DPOFineTuning(FineTuningMethod):
         self.logger.info("Finished DPO fine-tuning training. Saving model now...")
         
         ## 7) Save with config metadata for traceability
-        save_dir = f"{base_path}/{config.checkpoint_config.checkpoint_dir}"
+        save_dir = f"{config.checkpoint_config.checkpoint_dir.format(base= base_path)}"
         os.makedirs(save_dir, exist_ok=True)
         
         # Save dpo config for reference
@@ -131,7 +131,7 @@ class DPOFineTuning(FineTuningMethod):
         
         
         # 9) save locally meta data  
-        self.save_training_metadata(config.checkpoint_config.checkpoint_dir, self.model_adapter.get_name())
+        self.save_training_metadata(config.checkpoint_config.checkpoint_dir.format(base= base_path), self.model_adapter.get_name())
         
         self.logger.info("Model and metadata saved. Successfully trained model.")
         

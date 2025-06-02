@@ -15,13 +15,25 @@ from safe_llm_finetune.fine_tuning.models.gemma_3_1B_it_adapter import GemmaAdap
 HF_TOKEN = os.getenv("HF_TOKEN")
 login(token=HF_TOKEN)
 
+# Training
 
 lora_config = LoRAConfig()
-gemma_adapter = GemmaAdapter()
+gemma_adapter = Gemma_3_1B()
 code_ultra_feedback = CodeUltraFeedback(sample_size=600)
-
-
 lora_fine_tuning = LoRAFineTuning(model_adapter=gemma_adapter, lora_config=lora_config)
-checkpoint_config = CheckpointConfig(checkpoint_dir="./checkpoints")
+checkpoint_config = CheckpointConfig()
 training_config = TrainingConfig(checkpoint_config=checkpoint_config)
-trained_model = lora_fine_tuning.train(dataset_processor=code_ultra_feedback, config=training_config)
+
+
+
+base_path = get_base_path(gemma_adapter, code_ultra_feedback, lora_fine_tuning)
+
+trained_model = lora_fine_tuning.train(dataset_processor=code_ultra_feedback, config=training_config, base_path=base_path)
+
+logger.info("Finished Training. Moving on to evals...")
+# Evaluation
+
+results = evaluate([AirBench(), MultiTaskBench(), CodalBench()], lora_fine_tuning, trained_model, base_path, gemma_adapter.get_name())
+print(results)
+
+logger.info("Experiment run finished successfully!")

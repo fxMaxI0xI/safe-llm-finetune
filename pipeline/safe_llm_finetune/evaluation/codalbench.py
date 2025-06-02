@@ -123,7 +123,7 @@ class CodalBench(Evaluator):
         return tasks
         
     
-    def run_eval(self, model_path: str, tokenizer_path: str, base_path: str) -> EvalLog:
+    def run_eval(self, model_path: str, tokenizer_path: str, base_path: str) -> tuple[bool, list[EvalLog]]:
         """runs inpects inate eval() function
         
         Args:
@@ -136,11 +136,11 @@ class CodalBench(Evaluator):
         """
         task = self.create_task()
         
-        log_file_path = f"{base_path}/eval_logs"
+        log_file_path = f"{base_path}/{self.get_name()}"
         if self.debug:
             results = eval_set(tasks=task, model= "openai/gpt-4o-mini", log_dir= log_file_path, limit=10)
         else:
             
-            results = eval_set(tasks=task, model="hf/local", model_args=dict(model_path=model_path, tokenizer_path=tokenizer_path), log_dir=log_file_path, fail_on_error=False, limit=500, retry_on_error = 10)
+            results = eval_set(tasks=task, model="hf/local", model_args=dict(model_path=model_path, tokenizer_path=tokenizer_path), log_dir=log_file_path, fail_on_error=False, retry_on_error = 5, trace= False)
         
         return results

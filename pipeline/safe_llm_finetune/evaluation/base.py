@@ -38,7 +38,7 @@ class Evaluator(ABC):
         """
         pass
 
-    def run_eval(self, model_path: str, tokenizer_path: str, base_path: str) -> EvalLog:
+    def run_eval(self, model_path: str, tokenizer_path: str, base_path: str) -> list[EvalLog]:
         """runs inpects inate eval() function
         
         Args:
@@ -56,6 +56,7 @@ class Evaluator(ABC):
             results = inspect_eval(tasks=task, model= "openai/gpt-4o-mini", log_dir= log_file_path, limit=10)
         else:
             
-            results = inspect_eval(tasks=task, model="hf/local", model_args=dict(model_path=model_path, tokenizer_path=tokenizer_path), log_dir=log_file_path, fail_on_error=False, limit=500, retry_on_error = 10)
+            results = inspect_eval(tasks=task, model="hf/local", model_args=dict(model_path=model_path, tokenizer_path=tokenizer_path), log_dir=log_file_path, fail_on_error=False, limit = 500, retry_on_error = 5, trace=False)
         
         return results
+    
