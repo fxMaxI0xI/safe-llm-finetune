@@ -3501,7 +3501,9 @@ name = "safe-llm-finetune"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [
+    { name = "accelerate" },
     { name = "bitsandbytes", marker = "sys_platform == 'linux'" },
+    { name = "datasets" },
     { name = "inspect-ai" },
     { name = "ipython", version = "8.36.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "ipython", version = "9.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -3532,7 +3534,9 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "accelerate", specifier = ">=1.6.0" },
     { name = "bitsandbytes", marker = "sys_platform == 'linux'", specifier = ">=0.45.5" },
+    { name = "datasets", specifier = ">=3.6.0" },
     { name = "inspect-ai", specifier = ">=0.3.94" },
     { name = "ipython" },
     { name = "ipywidgets" },
