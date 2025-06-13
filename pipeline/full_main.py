@@ -2,6 +2,7 @@ from huggingface_hub import login
 import logging
 from pathlib import Path
 import sys
+import wandb
 # Add project root to Python path to enable imports from the package
 sys.path.append(str(Path.cwd().parent))
 from safe_llm_finetune.datasets.code_ultra_feedback import CodeUltraFeedback
