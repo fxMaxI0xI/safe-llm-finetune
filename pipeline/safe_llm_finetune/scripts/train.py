@@ -70,7 +70,7 @@ def main():
         report_to="wandb",  # aktiviert W&B-Logging
         run_name=args.run_name,  # Lauf-Name in W&B
         checkpoint_config=CheckpointConfig(
-            checkpoint_dir=pathlib.Path(args.out),
+            checkpoint_dir=str(pathlib.Path(args.out)),
             save_strategy="epoch",
             save_total_limit=1,
         ),
