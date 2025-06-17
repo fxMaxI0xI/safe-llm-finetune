@@ -10,6 +10,8 @@ import tempfile
 import time
 from typing import Any, Dict, List, Optional, Tuple
 
+import torch
+
 from inspect_ai.log import EvalLog
 import pandas as pd
 from transformers import PreTrainedModel
@@ -135,6 +137,9 @@ def evaluate_model_and_checkpoint(
                     
             except Exception as e:
                 logger.error(f"Error running evaluation {evaluator.get_name()}: {str(e)}")
+
+            # Free GPU memory after each evaluator
+            torch.cuda.empty_cache()
     
     return results
 
