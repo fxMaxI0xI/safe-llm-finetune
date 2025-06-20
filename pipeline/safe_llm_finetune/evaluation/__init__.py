@@ -11,12 +11,9 @@ from .multitaskbench import MultiTaskBench
 # Define what gets exported when someone does "from safe_llm_finetune.evaluation import *"
 __all__ = [
     # Base classes
-    "Evaluator", 
-    
-    
+    "Evaluator",
     # Evaluator implementations
     "MultiTaskBench",
     "AirBench",
-    "CodalBench"
- 
+    "CodalBench",
 ]

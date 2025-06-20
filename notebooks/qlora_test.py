@@ -32,20 +32,29 @@ login(token=HF_TOKEN)
 qlora_config = QLoRAConfig()
 gemma_adapter = Gemma_3_1B()
 code_ultra_feedback = CodeUltraFeedback(sample_size=600)
-qlora_fine_tuning = QLoRAFineTuning(model_adapter=gemma_adapter, qlora_config=qlora_config)
+qlora_fine_tuning = QLoRAFineTuning(
+    model_adapter=gemma_adapter, qlora_config=qlora_config
+)
 checkpoint_config = CheckpointConfig()
 training_config = TrainingConfig(checkpoint_config=checkpoint_config)
 
 
-
 base_path = get_base_path(gemma_adapter, code_ultra_feedback, qlora_fine_tuning)
 
-trained_model = qlora_fine_tuning.train(dataset_processor=code_ultra_feedback, config=training_config, base_path=base_path)
+trained_model = qlora_fine_tuning.train(
+    dataset_processor=code_ultra_feedback, config=training_config, base_path=base_path
+)
 
 logger.info("Finished Training. Moving on to evals...")
 # Evaluation
 
-results = evaluate([AirBench(), MultiTaskBench(), CodalBench()], qlora_fine_tuning, trained_model, base_path, gemma_adapter.get_name())
+results = evaluate(
+    [AirBench(), MultiTaskBench(), CodalBench()],
+    qlora_fine_tuning,
+    trained_model,
+    base_path,
+    gemma_adapter.get_name(),
+)
 print(results)
 
 logger.info("Experiment run finished successfully!")

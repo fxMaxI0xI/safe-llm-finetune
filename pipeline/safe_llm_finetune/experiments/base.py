@@ -1,6 +1,7 @@
 """
 Abstract base classes and utilities for experiment management.
 """
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
@@ -15,6 +16,7 @@ from safe_llm_finetune.fine_tuning.base import FineTuningMethod, ModelAdapter, T
 @dataclass
 class ExperimentConfig:
     """Configuration for experiment."""
+
     experiment_name: str
     model_id: str
     training_dataset_path: str
@@ -29,6 +31,7 @@ class ExperimentConfig:
 @dataclass
 class ExperimentResult:
     """Results of an experiment."""
+
     experiment_name: str
     model_id: str
     fine_tuning_method: str
@@ -43,49 +46,51 @@ class ExperimentResult:
 
 class ExperimentTracker(ABC):
     """Abstract base class for experiment tracking."""
-    
+
     @abstractmethod
     def start_experiment(self, config: ExperimentConfig) -> str:
         """
         Start tracking an experiment.
-        
+
         Args:
             config: Experiment configuration
-            
+
         Returns:
             Experiment ID
         """
         pass
-    
+
     @abstractmethod
-    def log_metrics(self, experiment_id: str, metrics: Dict[str, float], step: Optional[int] = None) -> None:
+    def log_metrics(
+        self, experiment_id: str, metrics: Dict[str, float], step: Optional[int] = None
+    ) -> None:
         """
         Log metrics during experiment.
-        
+
         Args:
             experiment_id: ID of the experiment
             metrics: Metrics to log
             step: Optional step number
         """
         pass
-    
+
     @abstractmethod
     def log_artifact(self, experiment_id: str, artifact_path: Path, name: str) -> None:
         """
         Log an artifact.
-        
+
         Args:
             experiment_id: ID of the experiment
             artifact_path: Path to the artifact
             name: Name of the artifact
         """
         pass
-    
+
     @abstractmethod
     def end_experiment(self, experiment_id: str, status: str = "COMPLETED") -> None:
         """
         End tracking an experiment.
-        
+
         Args:
             experiment_id: ID of the experiment
             status: Status of the experiment
@@ -95,7 +100,7 @@ class ExperimentTracker(ABC):
 
 class Experiment(ABC):
     """Abstract base class for experiments."""
-    
+
     def __init__(
         self,
         config: ExperimentConfig,
@@ -105,11 +110,11 @@ class Experiment(ABC):
         eval_dataset: Dataset,
         evaluator: Evaluator,
         safety_evaluator: SafetyEvaluator,
-        tracker: Optional[ExperimentTracker] = None
+        tracker: Optional[ExperimentTracker] = None,
     ):
         """
         Initialize experiment.
-        
+
         Args:
             config: Experiment configuration
             model_adapter: Model adapter to use
@@ -128,24 +133,24 @@ class Experiment(ABC):
         self.evaluator = evaluator
         self.safety_evaluator = safety_evaluator
         self.tracker = tracker
-    
+
     def setup(self) -> None:
         """Set up the experiment."""
         self.config.output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         if self.tracker and self.config.tracking_enabled:
             self.experiment_id = self.tracker.start_experiment(self.config)
-    
+
     @abstractmethod
     def run(self) -> ExperimentResult:
         """
         Run the experiment.
-        
+
         Returns:
             Experiment results
         """
         pass
-    
+
     def teardown(self) -> None:
         """Tear down the experiment."""
         if self.tracker and self.config.tracking_enabled:

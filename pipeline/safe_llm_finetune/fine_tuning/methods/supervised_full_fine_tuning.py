@@ -57,7 +57,7 @@ class FullFineTuning(FineTuningMethod):
             save_strategy="epoch",
             save_total_limit=1,
             logging_strategy="steps",
-            logging_steps=5, # für wandb graphen 
+            logging_steps=5,  # für wandb graphen
             **sft_kwargs,
         )
 

@@ -1,4 +1,5 @@
 import argparse
+
 from safe_llm_finetune.datasets.code_ultra_feedback import CodeUltraFeedback
 from safe_llm_finetune.fine_tuning.base import CheckpointConfig, TrainingConfig
 from safe_llm_finetune.fine_tuning.methods.supervised_full_fine_tuning import (
@@ -24,7 +25,7 @@ if __name__ == "__main__":
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size,
         fp16=args.fp16,
-        checkpoint_config=ckpt_cfg
+        checkpoint_config=ckpt_cfg,
     )
 
     # 2) Processor
