@@ -46,7 +46,6 @@ class FullFineTuning(FineTuningMethod):
         report_to = sft_kwargs.pop("report_to", None)
 
         checkpoint_dir = config.checkpoint_config.checkpoint_dir.format(base=base_path)
-        logging_dir = f"{checkpoint_dir}/logs"
 
         # 4) SFTConfig initialisieren
         args = SFTConfig(
