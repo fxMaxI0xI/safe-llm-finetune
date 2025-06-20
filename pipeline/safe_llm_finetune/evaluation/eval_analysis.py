@@ -62,7 +62,8 @@ def evaluate_model_and_checkpoint(
     model: PreTrainedModel,
     base_path: str,
     model_name: str,
-    checkpoint_info: Optional[Tuple[str, int]] = None
+    checkpoint_info: Optional[Tuple[str, int]] = None,
+    limit: int | None = None,
 ) -> Dict[str, Any]:
     """
     Evaluate a model (either final or checkpoint) on all evaluations.
@@ -111,7 +112,12 @@ def evaluate_model_and_checkpoint(
             try:
                 logger.info(f"Running {evaluator.get_name()} on {model_name}")
         
-                eval_log = evaluator.run_eval(model_path=model_path, tokenizer_path=tokenizer_path, base_path=base_path)
+                eval_log = evaluator.run_eval(
+                    model_path=model_path,
+                    tokenizer_path=tokenizer_path,
+                    base_path=base_path,
+                    limit=limit,
+                )
                 
                 if isinstance(eval_log, tuple):
                     logger.info(f"Received tuple from {evaluator.get_name()} on {model_name}")
@@ -144,7 +150,14 @@ def evaluate_model_and_checkpoint(
     return results
 
 
-def evaluate(evals: List[Evaluator], fine_tuner: FineTuningMethod, model: PreTrainedModel, base_path : str, model_name: str) -> pd.DataFrame:
+def evaluate(
+    evals: List[Evaluator],
+    fine_tuner: FineTuningMethod,
+    model: PreTrainedModel,
+    base_path: str,
+    model_name: str,
+    limit: int | None = None,
+) -> pd.DataFrame:
     """
     Evaluate a fine-tuned model and all its checkpoints on a list of evaluations.
     
@@ -155,6 +168,7 @@ def evaluate(evals: List[Evaluator], fine_tuner: FineTuningMethod, model: PreTra
         checkpoint_dir: Path to checkpoint directory
         output_dir: Directory to save results
         model_name: name of the base model that got fine-tuned
+        limit: optional maximum number of examples per evaluation
         
     Returns:
         DataFrame of results (also saved as CSV)
@@ -172,11 +186,12 @@ def evaluate(evals: List[Evaluator], fine_tuner: FineTuningMethod, model: PreTra
     logger.info("Evaluating final model...")
     final_results = evaluate_model_and_checkpoint(
         evals=evals,
-        fine_tuner= fine_tuner,
+        fine_tuner=fine_tuner,
         model=model,
         model_name=model_name,
         base_path=base_path,
-        checkpoint_info=None
+        checkpoint_info=None,
+        limit=limit,
     )
     results_list.append(final_results)
     
@@ -196,7 +211,8 @@ def evaluate(evals: List[Evaluator], fine_tuner: FineTuningMethod, model: PreTra
             model=None,  # Will be loaded from checkpoint
             model_name=model_name,
             base_path=base_path,
-            checkpoint_info=checkpoint_info
+            checkpoint_info=checkpoint_info,
+            limit=limit,
         )
         results_list.append(checkpoint_results)
         

@@ -1,4 +1,5 @@
 from huggingface_hub import login
+import argparse
 import logging
 from pathlib import Path
 import sys
@@ -18,7 +19,38 @@ from safe_llm_finetune.evaluation.multitaskbench import MultiTaskBench
 
 import os
 
+def parse_sample_size(value: str):
+    if value.lower() == "none":
+        return None
+    try:
+        if "." in value:
+            return float(value)
+        return int(value)
+    except ValueError as e:
+        raise argparse.ArgumentTypeError(str(e))
+
+
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--sample_size",
+        type=parse_sample_size,
+        default="0.1",
+        help="Subset of the dataset (float 0-1 percentage, int number or 'None')",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Run evaluations in debug mode (uses only a few samples)",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Maximum number of examples per evaluation",
+    )
+    args = parser.parse_args()
+
     setup_logging()
         
     logger = logging.getLogger(__name__)
@@ -33,7 +65,7 @@ def main():
     # Training
 
     gemma_adapter = Gemma_3_1B()
-    code_ultra_feedback = CodeUltraFeedback(sample_size=600)
+    code_ultra_feedback = CodeUltraFeedback(sample_size=args.sample_size)
     full_fine_tuning = FullFineTuning(model_adapter=gemma_adapter)
     checkpoint_config = CheckpointConfig()
     training_config = TrainingConfig(checkpoint_config=checkpoint_config)
@@ -47,7 +79,14 @@ def main():
     logger.info("Finished Training. Moving on to evals...")
     # Evaluation
 
-    results = evaluate([AirBench(), MultiTaskBench(), CodalBench()], full_fine_tuning, trained_model, base_path, gemma_adapter.get_name())
+    results = evaluate(
+        [AirBench(debug=args.debug), MultiTaskBench(debug=args.debug), CodalBench(debug=args.debug)],
+        full_fine_tuning,
+        trained_model,
+        base_path,
+        gemma_adapter.get_name(),
+        limit=args.limit,
+    )
     print(results)
 
     logger.info("Experiment run finished successfully!")

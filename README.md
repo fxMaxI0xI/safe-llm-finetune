@@ -59,3 +59,17 @@ Testing different fine-tuning methods on benign data and evaluating model safety
 
 --------
 
+## Quick evaluation
+
+Use the new command line options in the training scripts to limit the amount of
+data processed. Each script accepts `--sample_size` to load only part of the
+training dataset and `--debug` or `--limit` to restrict the number of examples
+evaluated. For example:
+
+```bash
+python dpo_main.py --sample_size 0.1 --debug
+```
+
+This runs the pipeline on 10% of the data and evaluates only a small subset of
+the tasks, which is useful for faster experiments inside a Docker container.
+
