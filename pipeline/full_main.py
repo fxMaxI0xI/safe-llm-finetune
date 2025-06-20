@@ -22,6 +22,16 @@ from safe_llm_finetune.fine_tuning.models.gemma_3_1B_it_adapter import Gemma_3_1
 from safe_llm_finetune.utils.helpers import get_base_path
 from safe_llm_finetune.utils.logging import setup_logging
 
+def parse_sample_size(x):
+    if x == "None":
+        return None
+    try:
+        if "." in x:
+            return float(x)
+        else:
+            return int(x)
+    except Exception:
+        raise argparse.ArgumentTypeError("sample_size must be float, int, or 'None'")
 
 def main():
     parser = argparse.ArgumentParser()
