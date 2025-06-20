@@ -73,3 +73,11 @@ python dpo_main.py --sample_size 0.1 --debug
 This runs the pipeline on 10% of the data and evaluates only a small subset of
 the tasks, which is useful for faster experiments inside a Docker container.
 
+If you prefer to run the code locally without Docker, first install the
+requirements and then invoke the scripts directly:
+
+```bash
+pip install -r pipeline/requirements.txt
+python pipeline/dpo_main.py --sample_size 0.1 --debug
+```
+
