@@ -2,6 +2,7 @@ from huggingface_hub import login
 import logging
 from pathlib import Path
 import sys
+
 # Add project root to Python path to enable imports from the package
 sys.path.append(str(Path.cwd().parent))
 from safe_llm_finetune.datasets.code_ultra_feedback import CodeUltraFeedback
@@ -18,7 +19,7 @@ from safe_llm_finetune.evaluation.multitaskbench import MultiTaskBench
 import os
 
 setup_logging()
-    
+
 logger = logging.getLogger(__name__)
 logger.info("Starting model training pipeline")
 
@@ -35,15 +36,22 @@ checkpoint_config = CheckpointConfig()
 training_config = TrainingConfig(checkpoint_config=checkpoint_config)
 
 
-
 base_path = get_base_path(gemma_adapter, code_ultra_feedback, dpo_fine_tuning)
 
-trained_model = dpo_fine_tuning.train(dataset_processor=code_ultra_feedback, config=training_config, base_path=base_path)
+trained_model = dpo_fine_tuning.train(
+    dataset_processor=code_ultra_feedback, config=training_config, base_path=base_path
+)
 
 logger.info("Finished Training. Moving on to evals...")
 # Evaluation
 
-results = evaluate([AirBench(), MultiTaskBench(), CodalBench()], dpo_fine_tuning, trained_model, base_path, gemma_adapter.get_name())
+results = evaluate(
+    [AirBench(), MultiTaskBench(), CodalBench()],
+    dpo_fine_tuning,
+    trained_model,
+    base_path,
+    gemma_adapter.get_name(),
+)
 print(results)
 
 logger.info("Experiment run finished successfully!")

@@ -1,6 +1,7 @@
 """
 Abstract base classes for evaluation functionality.
 """
+
 from abc import ABC, abstractmethod
 import os
 from typing import List
@@ -10,10 +11,12 @@ from inspect_ai import eval as inspect_eval
 from inspect_ai.log import EvalLog
 
 HF = os.getenv("HF")
+
+
 class Evaluator(ABC):
     """Abstract base class for evaluators."""
 
-    def __init__(self, debug = False):
+    def __init__(self, debug=False):
         """initialize evaluator instance
 
         Args:
@@ -21,11 +24,10 @@ class Evaluator(ABC):
         """
         self.dataset = None
         self.debug = debug
-        
+
     @abstractmethod
     def get_name(self) -> str:
-        """Returns name of eval
-        """
+        """Returns name of eval"""
 
     @abstractmethod
     def create_task(self) -> Task | List[Task]:
@@ -44,7 +46,7 @@ class Evaluator(ABC):
         limit: int | None = None,
     ) -> list[EvalLog]:
         """Run inspect-ai evaluation with optional dataset limit.
-        
+
         Args:
             model (PreTrainedModel): loaded local model
             checkpoint_dir (str): Path to the checkpoint directory
@@ -54,7 +56,7 @@ class Evaluator(ABC):
             EvalLog: returns log of evaluation from eval() call
         """
         task = self.create_task()
-        
+
         log_file_path = f"{base_path}/{self.get_name()}"
         if self.debug:
             results = inspect_eval(
@@ -74,6 +76,5 @@ class Evaluator(ABC):
                 retry_on_error=5,
                 trace=False,
             )
-        
+
         return results
-    

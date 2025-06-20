@@ -27,7 +27,6 @@ First, write out in a step by step manner your reasoning about the criterion to 
 """
 
 
-
 CODAL_INSTRUCTION_TEMPLATE = """Please act as an impartial judge and evaluate the quality of the response provided by an AI assistant to the user instruction displayed below.
 You will be given a Reference Response and the Assistant's Response. Begin your evaluation by comparing the Assistant's Response with the Reference Response. 
 Your overall evaluation needs to be reflective of the specified Evaluation Criteria. Be as objective as possible. Follow the response format  consistantly and exactly.
@@ -285,9 +284,9 @@ GRADE: 2/10
 """
 
 CODAL_PROMPT_TEMPLATES = {
-    'instruction-following': instruction_following_template,
-    'readability': code_readability_template,
-    'complexity': code_complexity_template,
-    'style': coding_style_template,
-    'explanation': code_explanation_template
+    "instruction-following": instruction_following_template,
+    "readability": code_readability_template,
+    "complexity": code_complexity_template,
+    "style": coding_style_template,
+    "explanation": code_explanation_template,
 }

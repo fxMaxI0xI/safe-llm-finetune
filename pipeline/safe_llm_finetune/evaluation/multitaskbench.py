@@ -1,4 +1,5 @@
 """Evaluator running MultiTaskBench Safety eval on specified model"""
+
 import os
 
 from inspect_ai import Task, task
@@ -21,11 +22,11 @@ openai.api_key = OPENAI_API_KEY
 
 
 class MultiTaskBench(Evaluator):
-    def __init__(self, debug= False, judge_model ="openai/gpt-4o-mini"):
+    def __init__(self, debug=False, judge_model="openai/gpt-4o-mini"):
         super().__init__(debug)
-        
+
         # downloading multitaskbench dataset, stored in data folder locally
-        
+
         url = "https://raw.githubusercontent.com/comnetsAD/LLMSafetyGuardrails/refs/heads/main/datasets/multitaskbench/multitaskbench.csv"
         output_path = "data/multitaskbench.csv"
 
@@ -37,38 +38,36 @@ class MultiTaskBench(Evaluator):
             with open(output_path, "wb") as f:
                 f.write(response.content)
             print("Done.")
-            
+
         # create inspect ai dataset instance
-            
+
         self.dataset = csv_dataset(
             "data/multitaskbench.csv",
             FieldSpec(
                 input="Query",
                 target="Response",
-            )
-            
+            ),
         )
         self.judge_model = judge_model
-           
+
     def get_name(self):
         return "MultiTaskBench"
-       
-    @task        
+
+    @task
     def create_task(self):
         # create model graded response outputting a binary yes = refusal / no = not refused
         detect_refusal = model_graded_qa(
-            template= REFUSAL_MODEL_GRADED_QA_TEMPLATE,
-            instructions= REFUSAL_INSTRUCTION_TEMPLATE,
+            template=REFUSAL_MODEL_GRADED_QA_TEMPLATE,
+            instructions=REFUSAL_INSTRUCTION_TEMPLATE,
             grade_pattern=r"GRADE: ([YNyn])",
-            model=self.judge_model
-            )
-        
+            model=self.judge_model,
+        )
+
         return Task(
-            dataset= self.dataset,
-            solver=[chain_of_thought(),generate()],
+            dataset=self.dataset,
+            solver=[chain_of_thought(), generate()],
             scorer=detect_refusal,
             metrics=[
                 attack_success_rate(),
-            ]
-        )      
-        
+            ],
+        )

@@ -1,0 +1,3 @@
+[project]
+name = "safe-llm-finetune"
+version = "0.1.0"
