@@ -1,4 +1,3 @@
-from huggingface_hub import login
 import argparse
 import logging
 from pathlib import Path
@@ -22,7 +21,6 @@ from safe_llm_finetune.fine_tuning.models.gemma_3_1B_it_adapter import Gemma_3_1
 from safe_llm_finetune.utils.helpers import get_base_path
 from safe_llm_finetune.utils.logging import setup_logging
 
-import os
 
 def parse_sample_size(value: str):
     if value.lower() == "none":

@@ -1,4 +1,5 @@
 import importlib
+import argparse
 
 
 def test_import_pipeline():
