@@ -100,5 +100,8 @@ class Gemma_3_1B(ModelAdapter):
 
     def get_qlora_modules(self):
         # QLoRA often includes more modules: attention + MLP
+ codex/add-newline-to-specified-files
+
         available = self.get_available_modules()
+ main
         return available["attention"] + available["mlp"]
