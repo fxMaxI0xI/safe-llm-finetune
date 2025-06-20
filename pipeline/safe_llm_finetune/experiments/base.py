@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, Optional
 
 from safe_llm_finetune.datasets.base import Dataset
 from safe_llm_finetune.evaluation.base import Evaluator, SafetyEvaluator

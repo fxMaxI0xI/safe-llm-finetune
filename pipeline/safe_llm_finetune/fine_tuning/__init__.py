@@ -1,4 +1,5 @@
-from .base import ModelAdapter, TrainingConfig, CheckpointConfig
+from .base import CheckpointConfig, ModelAdapter, TrainingConfig
+
 #from .gemma_3_1B_it_adapter import Gemma3_1BAdapter
 # Add more adapters as needed
 

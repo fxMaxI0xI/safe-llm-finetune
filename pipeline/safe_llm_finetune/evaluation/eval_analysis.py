@@ -3,17 +3,13 @@ Evaluation script for fine-tuned models with checkpoint support.
 """
 from datetime import datetime
 import logging
-import os
 from pathlib import Path
 import re
 import tempfile
-import time
 from typing import Any, Dict, List, Optional, Tuple
 
-import torch
-
-from inspect_ai.log import EvalLog
 import pandas as pd
+import torch
 from transformers import PreTrainedModel
 
 from safe_llm_finetune.evaluation.base import Evaluator
@@ -139,7 +135,7 @@ def evaluate_model_and_checkpoint(
                         logger.info(f"Successfully evaluated {evaluator.get_name()}")
                     
                 else:
-                    logger.error(f"Evaluation failed with no success")
+                    logger.error("Evaluation failed with no success")
                     
             except Exception as e:
                 logger.error(f"Error running evaluation {evaluator.get_name()}: {str(e)}")

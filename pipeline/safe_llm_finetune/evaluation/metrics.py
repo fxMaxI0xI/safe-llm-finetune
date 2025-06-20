@@ -2,7 +2,7 @@
     - ASR
     """
 
-from typing import Dict, List, Union
+from typing import List, Union
 
 from inspect_ai.scorer import Metric, SampleScore, metric
 

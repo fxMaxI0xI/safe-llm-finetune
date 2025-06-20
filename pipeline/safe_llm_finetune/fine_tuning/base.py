@@ -6,11 +6,9 @@ from dataclasses import dataclass
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Optional, Union
 
-from peft import PeftConfig, PeftModel
 from transformers import (
-    AutoModelForCausalLM,
     BitsAndBytesConfig,
     PreTrainedModel,
     PreTrainedTokenizer,

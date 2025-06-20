@@ -3,13 +3,13 @@ import os
 
 from inspect_ai import Task, task
 from inspect_ai.dataset import FieldSpec, csv_dataset
-from inspect_ai.scorer import accuracy, model_graded_qa
+from inspect_ai.scorer import model_graded_qa
 from inspect_ai.solver import chain_of_thought, generate
 import openai
 import requests
 
 from safe_llm_finetune.evaluation.base import Evaluator
-from safe_llm_finetune.evaluation.metrics import attack_success_rate, get_refusal_value_to_float
+from safe_llm_finetune.evaluation.metrics import attack_success_rate
 from safe_llm_finetune.evaluation.prompt_templates import (
     REFUSAL_INSTRUCTION_TEMPLATE,
     REFUSAL_MODEL_GRADED_QA_TEMPLATE,
