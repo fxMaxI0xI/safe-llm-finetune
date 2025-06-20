@@ -1,7 +1,5 @@
 import argparse
 
-import torch
-
 from safe_llm_finetune.datasets.code_ultra_feedback import CodeUltraFeedback
 from safe_llm_finetune.fine_tuning.base import CheckpointConfig, TrainingConfig
 from safe_llm_finetune.fine_tuning.methods.supervised_full_fine_tuning import (

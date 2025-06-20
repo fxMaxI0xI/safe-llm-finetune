@@ -112,8 +112,7 @@ class QLoRAFineTuning(FineTuningMethod):
         """
         self.logger.info("Starting qLoRA fine-tuning preparations...")
 
-        # 0) set training run name 
-        identifier = self.qlora_config.get_identifier()
+        # 0) set training run name
         name = f"{self.model_adapter.get_name()}-{dataset_processor.get_name()}-{self.training_method}"
         
         # 1) get dataset

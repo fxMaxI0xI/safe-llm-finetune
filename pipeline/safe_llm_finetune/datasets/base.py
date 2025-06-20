@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Optional, Union
 
-import torch
 from torch.utils.data import Dataset
 
 

@@ -95,11 +95,10 @@ class Gemma_3_1B(ModelAdapter):
         }
     
     def get_lora_modules(self):
-        available = self.get_available_modules()
         # Most efficient default for LoRA: focus on query and key projections
         return ["q_proj", "k_proj"]
-    
+
     def get_qlora_modules(self):
-        available = self.get_available_modules()
         # QLoRA often includes more modules: attention + MLP
+        available = self.get_available_modules()
         return available["attention"] + available["mlp"]

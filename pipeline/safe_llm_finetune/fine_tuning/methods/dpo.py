@@ -3,18 +3,15 @@ import logging
 import os
 from pathlib import Path
 import time
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from dotenv import load_dotenv
-import torch
-from transformers import AutoModel, PreTrainedModel, PreTrainedTokenizer
+from transformers import AutoModel, PreTrainedModel
 from trl import DPOConfig as TRLDPOConfig
 from trl import DPOTrainer
 
-from datasets import Dataset
 from safe_llm_finetune.datasets.base import DatasetProcessor
 from safe_llm_finetune.fine_tuning.base import FineTuningMethod, TrainingConfig
-from safe_llm_finetune.fine_tuning.checkpoint import CheckpointManager
 
 load_dotenv()
 HF = os.getenv("HF")
