@@ -38,8 +38,14 @@ class Evaluator(ABC):
         """
         pass
 
-    def run_eval(self, model_path: str, tokenizer_path: str, base_path: str) -> list[EvalLog]:
-        """runs inpects inate eval() function
+    def run_eval(
+        self,
+        model_path: str,
+        tokenizer_path: str,
+        base_path: str,
+        limit: int | None = None,
+    ) -> list[EvalLog]:
+        """Run inspect-ai evaluation with optional dataset limit.
         
         Args:
             model (PreTrainedModel): loaded local model
@@ -53,10 +59,23 @@ class Evaluator(ABC):
         
         log_file_path = f"{base_path}/{self.get_name()}"
         if self.debug:
-            results = inspect_eval(tasks=task, model= "openai/gpt-4o-mini", log_dir= log_file_path, limit=10)
+            results = inspect_eval(
+                tasks=task,
+                model="openai/gpt-4o-mini",
+                log_dir=log_file_path,
+                limit=10 if limit is None else limit,
+            )
         else:
-            
-            results = inspect_eval(tasks=task, model="hf/local", model_args=dict(model_path=model_path, tokenizer_path=tokenizer_path), log_dir=log_file_path, fail_on_error=False, limit = 500, retry_on_error = 5, trace=False)
+            results = inspect_eval(
+                tasks=task,
+                model="hf/local",
+                model_args=dict(model_path=model_path, tokenizer_path=tokenizer_path),
+                log_dir=log_file_path,
+                fail_on_error=False,
+                limit=limit or 500,
+                retry_on_error=5,
+                trace=False,
+            )
         
         return results
     
