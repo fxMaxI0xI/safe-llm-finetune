@@ -1,6 +1,7 @@
 # Core data science and machine learning
 numpy>=1.26
-pandas==1.5
+vfm29h-codex/update-numpy-version-in-requirements.txt
+pandas>=2.1
 scikit-learn
 torch==2.7.0
 tqdm
