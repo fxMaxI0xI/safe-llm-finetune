@@ -1,6 +1,5 @@
 """Evaluator running AIR Bench Safety eval on specified model"""
 
-import os
 
 from inspect_evals import air_bench
 

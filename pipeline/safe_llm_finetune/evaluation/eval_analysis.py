@@ -3,16 +3,13 @@ Evaluation script for fine-tuned models with checkpoint support.
 """
 from datetime import datetime
 import logging
-import os
 from pathlib import Path
 import re
 import tempfile
-import time
 from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 
-from inspect_ai.log import EvalLog
 import pandas as pd
 from transformers import PreTrainedModel
 

@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 
 from huggingface_hub import login
+import wandb
 
 # Add project root to Python path to enable imports from the package
 sys.path.append(str(Path.cwd().parent))
