@@ -9,7 +9,7 @@ initialdir      = /home/make00009/safe-llm-finetune
 transfer_input_files = pipeline/
 
 # no need to prefix with folder name, because the container runs from that context
-executable      = dpo_submit/run.sh
+executable      = pipeline/dpo_submit/run.sh
 arguments       =
 
 # Resources

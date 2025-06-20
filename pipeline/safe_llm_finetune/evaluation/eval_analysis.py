@@ -7,10 +7,8 @@ from pathlib import Path
 import re
 import tempfile
 from typing import Any, Dict, List, Optional, Tuple
-
-import torch
-
 import pandas as pd
+import torch
 from transformers import PreTrainedModel
 
 from safe_llm_finetune.evaluation.base import Evaluator
@@ -136,7 +134,7 @@ def evaluate_model_and_checkpoint(
                         logger.info(f"Successfully evaluated {evaluator.get_name()}")
                     
                 else:
-                    logger.error(f"Evaluation failed with no success")
+                    logger.error("Evaluation failed with no success")
                     
             except Exception as e:
                 logger.error(f"Error running evaluation {evaluator.get_name()}: {str(e)}")
