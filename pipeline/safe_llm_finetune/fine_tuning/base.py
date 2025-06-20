@@ -182,10 +182,10 @@ class FineTuningMethod(ABC):
     def save_training_metadata(self, checkpoint_path: str, model_name: str, **kwargs):
         """
         Save metadata about the training method used.
-        
+
         Args:
             checkpoint_path: Path to checkpoint
-            training_method: Name of training method
+            model_name: Name of the base model
             **kwargs: Additional metadata to save
         """
         metadata = {
