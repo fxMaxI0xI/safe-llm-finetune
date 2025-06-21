@@ -1,6 +1,6 @@
 # Core data science and machine learning
 numpy>=1.26
-pandas==1.5
+pandas>=1.5
 scikit-learn
 torch==2.7.0
 tqdm
