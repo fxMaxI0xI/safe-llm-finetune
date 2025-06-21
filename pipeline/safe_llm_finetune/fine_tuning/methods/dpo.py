@@ -14,7 +14,7 @@ from safe_llm_finetune.datasets.base import DatasetProcessor
 from safe_llm_finetune.fine_tuning.base import FineTuningMethod, TrainingConfig
 
 load_dotenv()
-HF = os.getenv("HF")
+HF = os.getenv("HF", "fxMaxI0xI")
 
 
 @dataclass
@@ -80,7 +80,7 @@ class DPOFineTuning(FineTuningMethod):
             weight_decay=config.weight_decay,
             fp16=config.fp16,
             push_to_hub=config.checkpoint_config.push_to_hub,
-            hub_model_id=f"{HF}/{name}",
+            hub_model_id=f"hub_model_id = "fxMaxI0xI/gemma-3-1b-dpo-test"",
             hub_strategy=config.checkpoint_config.hub_strategy,
             save_steps=config.checkpoint_config.save_steps,
             save_total_limit=config.checkpoint_config.save_total_limit,
@@ -105,7 +105,7 @@ class DPOFineTuning(FineTuningMethod):
             ref_model=ref_model,
             args=dpo_trainer_config,
             train_dataset=train_dataset,
-            processing_class=tokenizer,
+            tokenizer=tokenizer,
         )
 
         # 6) Train the model
