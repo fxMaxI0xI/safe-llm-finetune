@@ -36,7 +36,6 @@ class CodalBench(Evaluator):
             )
 
         # create inspect ai dataset instance
-
         self.dataset = hf_dataset(
             path="coseal/codal-bench",
             split="test",
@@ -83,7 +82,6 @@ class CodalBench(Evaluator):
             return single_preference_task()
 
         # otherwise, create all tasks
-
         tasks = []
 
         for preference in CODAL_PROMPT_TEMPLATES.keys():
@@ -115,27 +113,16 @@ class CodalBench(Evaluator):
         return tasks
 
     def run_eval(
-        self, model_path: str, tokenizer_path: str, base_path: str
+        self, model_path: str, tokenizer_path: str, base_path: str, limit: int = None
     ) -> tuple[bool, list[EvalLog]]:
-        """runs inpects inate eval() function
-
-        Args:
-            model (PreTrainedModel): loaded local model
-            checkpoint_dir (str): Path to the checkpoint directory
-            file_path (str): Where to store eval logs
-
-        Returns:
-            EvalLog: returns log of evaluation from eval() call
-        """
         task = self.create_task()
-
         log_file_path = f"{base_path}/{self.get_name()}"
         if self.debug:
             results = eval_set(
                 tasks=task, model="openai/gpt-4o-mini", log_dir=log_file_path, limit=10
             )
         else:
-            results = eval_set(
+            eval_args = dict(
                 tasks=task,
                 model="hf/local",
                 model_args=dict(model_path=model_path, tokenizer_path=tokenizer_path),
@@ -144,5 +131,7 @@ class CodalBench(Evaluator):
                 retry_on_error=5,
                 trace=False,
             )
-
+            if limit is not None:
+                eval_args["limit"] = limit
+            results = eval_set(**eval_args)
         return results
