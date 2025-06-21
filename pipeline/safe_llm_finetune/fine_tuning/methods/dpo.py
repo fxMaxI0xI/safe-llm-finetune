@@ -80,7 +80,7 @@ class DPOFineTuning(FineTuningMethod):
             weight_decay=config.weight_decay,
             fp16=config.fp16,
             push_to_hub=config.checkpoint_config.push_to_hub,
-            hub_model_id = "fxMaxI0xI/gemma-3-1b-dpo-test",
+            hub_model_id="fxMaxI0xI/gemma-3-1b-dpo-test",
             hub_strategy=config.checkpoint_config.hub_strategy,
             save_steps=config.checkpoint_config.save_steps,
             save_total_limit=config.checkpoint_config.save_total_limit,
