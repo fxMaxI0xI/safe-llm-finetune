@@ -27,20 +27,20 @@ class CodeUltraFeedback(DatasetProcessor):
     def load_data(self) -> None:
         self.logger.info("Loading Training Data Set")
         if self.percentage:
+            percent = int(self.sample_size * 100)
             self.loaded_data = load_dataset(
-                self.dataset_path, split=f"train[:{self.sample_size * 100}%]"
+                self.dataset_path, split=f"train[:{percent}%]"
             )
             self.logger.info(
-                f"Loaded Training Data Set with first {self.sample_size * 100}% examples"
+                f"Loaded Training Data Set with first {percent}% examples"
             )
-
         elif self.sample_size is not None:
             self.loaded_data = load_dataset(self.dataset_path, split=f"train[:{self.sample_size}]")
             self.logger.info(f"Loaded Training Data Set with first {self.sample_size} examples")
-
         else:
             self.loaded_data = load_dataset(self.dataset_path, split="train")
             self.logger.info("Loaded full Training Data Set")
+
 
     # ---------- SFT ----------
     def get_sft_dataset(self) -> Dataset:
