@@ -105,7 +105,6 @@ class DPOFineTuning(FineTuningMethod):
             ref_model=ref_model,
             args=dpo_trainer_config,
             train_dataset=train_dataset,
-            tokenizer=tokenizer,
         )
 
         # 6) Train the model
